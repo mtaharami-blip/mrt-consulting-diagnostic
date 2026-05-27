@@ -91,7 +91,7 @@ function ResultsContent({
             className="text-[11px] tracking-[0.15em] uppercase text-gold mb-4"
             style={{ fontFamily: 'var(--font-inter)' }}
           >
-            Primary Finding
+            Primary Constraint Identified
           </p>
           <h1
             className="text-3xl md:text-4xl lg:text-[42px] text-navy leading-[1.2] font-normal"
@@ -116,7 +116,7 @@ function ResultsContent({
                 className="text-[11px] tracking-[0.14em] uppercase text-text-muted mb-5"
                 style={{ fontFamily: 'var(--font-inter)' }}
               >
-                Observed Patterns
+                Diagnostic Observations
               </p>
               <div className="flex flex-col gap-3">
                 {output.observations.map((obs, idx) => (
@@ -153,7 +153,7 @@ function ResultsContent({
             className="text-[11px] tracking-[0.14em] uppercase text-white/50 mb-4"
             style={{ fontFamily: 'var(--font-inter)' }}
           >
-            The Central Diagnostic Question
+            The Central Question
           </p>
           <p
             className="text-xl md:text-2xl text-white leading-relaxed font-normal italic"
@@ -165,7 +165,7 @@ function ResultsContent({
             className="text-[12px] text-white/40 mt-4"
             style={{ fontFamily: 'var(--font-inter)' }}
           >
-            Take this question to your leadership team.
+            The pattern of your responses points to this as the question most worth examining.
           </p>
         </div>
 
@@ -205,7 +205,7 @@ function ResultsContent({
               className="text-[11px] tracking-[0.14em] uppercase text-text-muted mb-5"
               style={{ fontFamily: 'var(--font-inter)' }}
             >
-              Recommended Focus Areas
+              Priority Areas Requiring Executive Attention
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {output.focusAreas.map((area, idx) => (

@@ -60,14 +60,14 @@ export function OptInForm({ sessionId, output, context = {}, focusAreas = [] }: 
             className="text-[15px] font-medium text-navy"
             style={{ fontFamily: 'var(--font-inter)' }}
           >
-            Your diagnostic is under review
+            Your request has been received
           </h3>
         </div>
         <p
           className="text-[14px] text-text-secondary leading-relaxed"
           style={{ fontFamily: 'var(--font-inter)' }}
         >
-          A consultant will review your results and send a personalized brief to{' '}
+          A consultant will review your diagnostic profile and send a prepared interpretation to{' '}
           <strong>{email}</strong> within 48 hours.
         </p>
       </div>
@@ -80,21 +80,22 @@ export function OptInForm({ sessionId, output, context = {}, focusAreas = [] }: 
         className="text-[11px] tracking-[0.14em] uppercase text-white/50 mb-3"
         style={{ fontFamily: 'var(--font-inter)' }}
       >
-        Personalized Review
+        Consultant Interpretation
       </p>
       <h3
         className="text-xl md:text-2xl text-white leading-snug mb-3"
         style={{ fontFamily: 'var(--font-playfair)' }}
       >
-        Every diagnostic is reviewed by one of our consultants.
+        Every diagnostic completed through this tool is reviewed by one of our consultants.
       </h3>
       <p
         className="text-[14px] text-white/70 leading-relaxed mb-7"
         style={{ fontFamily: 'var(--font-inter)' }}
       >
-        If you would like a personalized interpretation — including how your profile compares
-        to similar businesses we have worked with — leave your contact below. We will follow
-        up within 48 hours with a brief prepared specifically for your situation.
+        If you would like a consultant interpretation of your diagnostic profile — including
+        how your pattern of responses compares to similar businesses and what the evidence
+        suggests about root cause — leave your contact details below. You will receive a
+        prepared brief within 48 hours, from a named consultant, specific to your situation.
       </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -138,7 +139,7 @@ export function OptInForm({ sessionId, output, context = {}, focusAreas = [] }: 
             )}
             style={{ fontFamily: 'var(--font-inter)' }}
           >
-            {formState === 'submitting' ? 'Sending…' : 'Request Review'}
+            {formState === 'submitting' ? 'Sending…' : 'Request Interpretation'}
           </button>
         </div>
 
@@ -155,7 +156,7 @@ export function OptInForm({ sessionId, output, context = {}, focusAreas = [] }: 
           className="text-[11px] text-white/40 mt-1"
           style={{ fontFamily: 'var(--font-inter)' }}
         >
-          No spam. One email. You can reply directly to our consultant.
+          One response. From a named consultant. Within 48 hours.
         </p>
       </form>
     </div>

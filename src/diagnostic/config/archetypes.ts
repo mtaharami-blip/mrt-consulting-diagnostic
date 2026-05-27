@@ -24,19 +24,19 @@ export const archetypes: Archetype[] = [
     ],
     focusAreas: [
       {
-        title: 'Operating model design for the next stage',
+        title: 'Structural capacity relative to growth ambition',
         description:
-          'Map your current operating model explicitly — how work flows, where decisions are made, and where management time is spent. Then design what it needs to look like at 2× your current scale. The gap between those two maps is your transformation agenda.',
+          'Your answers suggest the operating model is absorbing more management attention and resource per unit of output than it should — a pattern consistent with a business that has outgrown its original design. The question is not whether growth is possible, but whether the current structure can produce it without proportionally increasing complexity, cost, and leadership strain.',
       },
       {
-        title: 'Management leverage and delegation audit',
+        title: 'Management bandwidth and decision concentration',
         description:
-          'Identify which decisions your senior leadership is making today that should be made one level down. Scaling organizations that do not build management leverage create a bottleneck at the top that limits both speed and capacity.',
+          'Scaling businesses frequently reach a point where senior leadership is making decisions the organization should be making one level down. This is not a delegation preference — it is a structural constraint. When decision-making remains concentrated at the top, it becomes the binding limit on growth speed and organizational capability development.',
       },
       {
-        title: 'Operational visibility infrastructure',
+        title: 'Operational performance visibility at current scale',
         description:
-          'Determine what you need to be able to see — in near real time — to manage the business at your next scale. Build that visibility now, before you need it, so decisions are data-driven rather than reactive.',
+          'As businesses grow, the informal visibility mechanisms that worked at smaller scale — direct observation, trusted relationships, instinctive awareness — no longer provide an accurate picture of what is happening operationally. If your leadership team is relying on those signals now, at your current scale, the probability is high that significant operational problems are compounding below the surface before they become visible.',
       },
     ],
   },
@@ -61,19 +61,19 @@ export const archetypes: Archetype[] = [
     ],
     focusAreas: [
       {
-        title: 'Competitive differentiation audit',
+        title: 'Differentiation validity in the current market',
         description:
-          'Conduct structured conversations with your 10 best customers and 5 lost prospects. The goal is not to validate your positioning thesis — it is to discover what they actually value and whether it matches what you believe differentiates you. The gap between those two views is your strategic problem.',
+          'A differentiation claim that cannot be confirmed by your best customers — or that is described differently across your leadership team — is not a strategic asset. It is a belief. The gap between what the business believes differentiates it and what customers actually value is one of the most common and most consequential sources of strategic underperformance.',
       },
       {
-        title: 'Leadership alignment on strategic priorities',
+        title: 'Strategic consensus and the cost of its absence',
         description:
-          'Run a structured prioritization exercise with your leadership team: which markets are you in, which will you win, and which will you exit? Make the disagreements explicit. Unresolved strategic debate at the top creates misaligned execution throughout the organization.',
+          'When leadership teams hold different views about which markets to pursue, which customers to serve, and what the business is ultimately trying to become, those disagreements do not stay in the boardroom. They surface as conflicting priorities, misaligned investments, and execution that moves in multiple directions simultaneously. The cost of unresolved strategic misalignment is paid throughout the organization.',
       },
       {
-        title: 'Business model relevance review',
+        title: 'Business model fit with current market conditions',
         description:
-          'Examine whether your current business model — how you create, deliver, and capture value — still matches the way your best customers want to buy and be served. Business models that were sound five years ago may now be creating friction rather than value.',
+          'Business models that were sound at a different point in the market cycle can become constraints as conditions change. The mechanism — how the business creates, delivers, and captures value — may no longer match how the best customers want to engage. Where the model has drifted out of alignment with customer expectations, the symptoms often appear as pricing pressure, declining win rates, or customer acquisition costs that are rising without clear explanation.',
       },
     ],
   },
@@ -98,19 +98,19 @@ export const archetypes: Archetype[] = [
     ],
     focusAreas: [
       {
-        title: 'Operational bottleneck mapping',
+        title: 'Structural sources of delivery failure',
         description:
-          'Identify where work consistently slows, where quality falls short, and where rework is most frequent. Map the actual flow of work rather than the intended flow — the gap between those two is where operational capacity is being lost.',
+          'Execution failures in capable organizations typically have structural causes rather than people causes. When delivery is inconsistent, when rework is frequent, or when commitments are regularly missed, the most productive line of inquiry is into process design, accountability architecture, and the information available to operational managers — not the caliber of the individuals involved.',
       },
       {
-        title: 'Accountability and ownership clarity',
+        title: 'Accountability architecture and ownership gaps',
         description:
-          'For every key outcome in the business, identify who is explicitly accountable, how that accountability is measured, and what happens when it is not met. Ambiguity in accountability is the most common structural cause of execution failure.',
+          'Clear accountability — where a named individual owns an outcome, has the authority to affect it, and is measured against it — is rare in mid-market organizations. What looks like an accountability gap is usually an organizational design problem: roles that overlap, outcomes that are nobody\'s primary responsibility, or expectations that have never been made explicit. The business pays for these gaps in every operating cycle.',
       },
       {
-        title: 'Operational data and performance visibility',
+        title: 'The management visibility deficit',
         description:
-          'Determine what your leadership team needs to see — and currently cannot see — to manage operational performance effectively. Build or improve the reporting that would let you identify problems in days rather than months.',
+          'The gap between what leadership believes is happening operationally and what is actually happening is frequently the most consequential blind spot in a mid-market business. When operational performance is managed through informal signals — leadership instinct, anecdotal feedback, or lagging financial data — problems compound for extended periods before they become visible. By that point, they are significantly more expensive to address.',
       },
     ],
   },
@@ -135,19 +135,19 @@ export const archetypes: Archetype[] = [
     ],
     focusAreas: [
       {
-        title: 'Win/loss analysis',
+        title: 'The actual basis of commercial decisions',
         description:
-          'Conduct structured debrief interviews on your last 20 competitive situations — both wins and losses. Not to confirm your current assumptions about why you win, but to discover what buyers are actually deciding on. The findings frequently surprise leadership teams and directly reframe the commercial strategy.',
+          'Most businesses believe they understand why they win and why they lose. Structured win/loss evidence consistently reveals that the actual reasons diverge significantly from leadership\'s assumptions. Decisions about pricing, market positioning, and sales investment made on inaccurate assumptions about competitive dynamics tend to compound the underlying commercial problem rather than address it.',
       },
       {
-        title: 'Pricing model and value capture review',
+        title: 'Value capture relative to value delivered',
         description:
-          'Examine your pricing architecture against the value you demonstrably create. Identify where you are underpricing relative to outcomes, where you are facing resistance, and whether your pricing model (fixed, value-based, variable) still matches how customers prefer to buy.',
+          'Persistent pricing pressure is diagnostic. It typically signals one of three things: the business is competing in segments where its value proposition is not differentiated; the value it creates is not being communicated in terms customers find compelling; or pricing decisions are being made reactively rather than based on a clear view of what customers are willing to pay for. Each has a materially different implication for what needs to change.',
       },
       {
-        title: 'Customer retention and expansion mechanics',
+        title: 'Retention risk and revenue concentration',
         description:
-          'Map your customer lifecycle from acquisition through renewal or churn. Identify where value is created, where it is communicated, and where relationships are at risk. Retention is the most capital-efficient growth lever in most businesses and the most frequently undermanaged.',
+          'Revenue growth built primarily on new customer acquisition, without strong retention and expansion in existing accounts, creates structural commercial fragility. Each year\'s growth must overcome the prior year\'s attrition. The businesses that build durable revenue engines invest disproportionately in understanding why customers stay and why they leave — and most have not done this work with sufficient rigor.',
       },
     ],
   },
@@ -172,19 +172,19 @@ export const archetypes: Archetype[] = [
     ],
     focusAreas: [
       {
-        title: 'Segment-level profitability analysis',
+        title: 'The upstream source of financial underperformance',
         description:
-          'Build a true profitability view by product, service line, customer, and channel — allocating shared costs as accurately as possible. Most businesses find that a small number of segments generate the majority of margin, while others are consuming resources at a loss that is masked by the aggregate.',
+          'When financial performance is below expectation in a business that otherwise appears to be functioning — customers are being served, revenue is being generated, operations are running — the most likely explanation is that value is being lost in translation: between delivery and billing, between effort and margin, or between investment and return. The financial outcomes are downstream signals, not the primary problem.',
       },
       {
-        title: 'Cost structure and overhead review',
+        title: 'Hidden margin destruction by segment',
         description:
-          'Map your cost structure explicitly against the value-creating activities in the business. Identify where overhead has accumulated that is not directly supporting revenue or margin — and distinguish between costs that are fixed, variable, and discretionary.',
+          'Most businesses operating at the aggregate financial level are making capital allocation, pricing, and growth decisions without the information needed to make them well. Businesses that look profitable in aggregate frequently contain segments, product lines, or customer relationships that are consuming resources at a significant loss, masked by the performance of the rest of the portfolio. The decisions being made in the absence of this information have a measurable cost.',
       },
       {
-        title: 'Cash cycle and working capital optimization',
+        title: 'Cash conversion and its structural drivers',
         description:
-          'Analyze the gap between when you incur costs and when you collect cash. For most mid-market businesses, improvements in billing terms, collections, and payment timing can release meaningful working capital without any change to the underlying business model.',
+          'A gap between reported profitability and cash generation is one of the more consequential and frequently underexamined financial dynamics in mid-market businesses. Profitable businesses can and do fail for cash reasons. Understanding the specific mechanics of how cash moves through the business — and where it gets absorbed — is a prerequisite for managing the financial risk profile with any precision.',
       },
     ],
   },
@@ -208,19 +208,19 @@ export const archetypes: Archetype[] = [
     ],
     focusAreas: [
       {
-        title: 'Investment portfolio review',
+        title: 'Capital deployment and return accountability',
         description:
-          'Create an explicit inventory of where your business is deploying capital — including initiatives, headcount, technology, and markets. For each, assess the expected return, the current evidence of progress, and the honest probability of success. This is not a cost-cutting exercise — it is a reallocation exercise.',
+          'Businesses that grow revenue without a disciplined view of where capital is deployed — and what it is returning — frequently find that margin improvement lags revenue growth by design. Resources accumulate in initiatives, markets, and customer relationships that once made strategic sense but are no longer generating adequate return. Without an explicit portfolio view, the opportunity cost of continued deployment is invisible.',
       },
       {
-        title: 'Margin driver analysis',
+        title: 'Margin compression drivers and trajectory',
         description:
-          'Identify the three to five specific factors that are most responsible for the gap between your revenue growth and your margin growth. Are costs growing faster than revenue? Are you taking on lower-margin work? Is pricing lagging cost inflation? Each has a different solution.',
+          'When operating margins are compressing while revenue is growing or stable, there is typically a specific identifiable cause: costs growing faster than revenue, a shift in product or customer mix toward lower-margin work, pricing that is lagging cost inflation, or investment in capabilities that have not yet generated return. Cutting costs without identifying which of these is primary risks addressing the symptom while the underlying cause continues.',
       },
       {
-        title: 'Financial governance and decision framework',
+        title: 'The quality of investment decisions',
         description:
-          'Establish clear financial criteria for investment decisions — minimum return thresholds, stage-gate reviews for major initiatives, and regular portfolio reviews. This does not require a complex framework — a consistent set of questions asked before and after every significant investment is sufficient.',
+          'Capital allocation quality — the discipline and rigor with which a business decides where to deploy its resources — is one of the most significant determinants of long-term financial performance, and one of the least frequently examined. In most mid-market businesses, investment decisions are made on the basis of intuition, relationship, or momentum rather than structured evaluation of expected return and risk. The cumulative effect of poor allocation compounds over time.',
       },
     ],
   },
@@ -247,19 +247,19 @@ export const archetypes: Archetype[] = [
     ],
     focusAreas: [
       {
-        title: 'Root cause hypothesis development',
+        title: 'The shared root cause across dimensions',
         description:
-          'Before pursuing any specific improvement program, invest in developing a shared, explicit hypothesis about the single most important constraint in the business. Test it against the evidence from multiple dimensions. A well-formed root cause hypothesis is the most valuable output of a diagnostic process.',
+          'Multi-dimensional underperformance — where strategy, operations, and commercial performance are all showing constraint signals simultaneously — rarely has multiple independent causes. In most cases, there is a single root cause, usually strategic in nature, that is manifesting across dimensions. Identifying and naming that root cause, rather than treating each dimension as a separate problem requiring a separate solution, is the necessary first step.',
       },
       {
-        title: 'Strategic position review',
+        title: 'Strategic positioning under compound pressure',
         description:
-          'Examine whether the business is positioned to win in the markets it has chosen, with the model it has built, at the scale it is operating. Multi-dimensional pressure frequently traces back to a strategic positioning issue — competing in markets where the firm cannot win, or with a model that no longer fits the competitive landscape.',
+          'When a business experiences simultaneous pressure across multiple performance dimensions, the most productive question is whether the underlying strategic positioning — the markets chosen, the model employed, the competitive basis — is still adequate for the environment it is operating in. Organizations that are well-positioned and well-structured typically do not experience simultaneous deterioration across unrelated performance areas.',
       },
       {
-        title: 'Leadership alignment and decision-making process',
+        title: 'Leadership bandwidth and the compound cost of systemic pressure',
         description:
-          'In businesses under systemic pressure, leadership bandwidth is often consumed by operational firefighting rather than strategic decision-making. Identify how leadership time is currently being spent versus where it needs to be spent — and what would need to change to shift that allocation.',
+          'Businesses operating under systemic pressure consume leadership bandwidth at a disproportionate rate. Senior leaders are drawn into operational problem-solving, financial management, and commercial firefighting simultaneously — leaving limited capacity for the strategic thinking that would address the root cause. This creates a self-reinforcing dynamic: the pressure compounds faster than leadership can respond to it.',
       },
     ],
   },
@@ -282,14 +282,14 @@ export const fallbackArchetype: Archetype = {
   ],
   focusAreas: [
     {
-      title: 'Structured hypothesis development',
+      title: 'Primary constraint identification',
       description:
-        'Work with your leadership team to develop an explicit hypothesis about the primary constraint in the business. Use the diagnostic signals from this assessment as starting points, not conclusions. The goal is to identify the one thing that, if fixed, would have the greatest downstream impact.',
+        'Your diagnostic signals do not converge on a single dominant constraint, which is itself meaningful information. It may indicate that the business is performing adequately across most dimensions, or that the real constraint has not yet been clearly surfaced. In either case, the most productive next step is a structured effort to develop a working hypothesis about where the greatest performance leverage resides — before committing resources to any specific improvement agenda.',
     },
     {
-      title: 'Performance data review',
+      title: 'Stress-testing the current performance narrative',
       description:
-        'Gather the performance data that would allow you to test your hypothesis — financial, operational, and commercial. Look for the patterns that confirm or challenge your current understanding of where the business is losing value.',
+        'The explanation that leadership currently holds about why the business is performing as it is — the internal narrative about causes and constraints — may or may not be accurate. In businesses without a clear primary constraint signal, that narrative is frequently untested. The signal patterns from this diagnostic provide a starting point for examining where the evidence is consistent with the current understanding, and where it suggests a different interpretation.',
     },
   ],
 }
