@@ -2,6 +2,16 @@ import type { CategoryId, CategoryScore } from '../types'
 import type { Question } from '../types'
 import { normalizedToLevel } from '../config/categories'
 
+/**
+ * Computes category scores for all four BCT-mapped categories.
+ *
+ * In the new architecture, all categories are always assessed (no focus selection).
+ * Questions with `excludeFromScore: true` are PST lens questions — they are
+ * excluded from CategoryScore calculation but contribute to LensSignal detection.
+ *
+ * The assessedCategories param is preserved for backward compat with old sessions
+ * but new calls should pass all four category IDs.
+ */
 export function computeCategoryScores(
   answers: Record<string, string>,
   questions: Question[],
@@ -23,7 +33,10 @@ export function computeCategoryScores(
       }
     }
 
-    const categoryQuestions = questions.filter((q) => q.category === categoryId)
+    // Only BCT layer questions contribute to category score
+    const categoryQuestions = questions.filter(
+      (q) => q.category === categoryId && !q.excludeFromScore,
+    )
 
     let raw = 0
     let max = 0

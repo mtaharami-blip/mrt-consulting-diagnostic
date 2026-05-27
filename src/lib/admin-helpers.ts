@@ -42,21 +42,31 @@ export const roleLabels: Record<string, string> = {
 }
 
 export const archetypeLabels: Record<string, string> = {
+  // New BCT + PST patterns
+  strategic_clarity_deficit:        'Strategic Clarity Deficit',
+  business_model_mismatch:          'Business Model Mismatch',
+  operating_model_lag:              'Operating Model Lag',
+  management_infrastructure_deficit:'Management Infrastructure Deficit',
+  systemic_misalignment:            'Systemic Misalignment',
+  narrative_confidence_gap:         'Narrative Confidence Gap',
+  external_constraint:              'External Constraint',
+  broad_review:                     'Broad Review Recommended',
+  // Legacy archetypes (backward compat for old sessions)
   scaling_inflection: 'Scaling Inflection',
-  strategic_drift: 'Strategic Drift',
-  execution_gap: 'Execution Gap',
-  commercial_engine: 'Commercial Engine',
-  financial_symptom: 'Financial Symptom',
-  margin_capital: 'Margin & Capital Discipline',
-  systemic_pressure: 'Systemic Pressure',
-  fallback: 'Broad Review Recommended',
+  strategic_drift:    'Strategic Drift',
+  execution_gap:      'Execution Gap',
+  commercial_engine:  'Commercial Engine',
+  financial_symptom:  'Financial Symptom',
+  margin_capital:     'Margin & Capital Discipline',
+  systemic_pressure:  'Systemic Pressure',
+  fallback:           'Broad Review Recommended',
 }
 
 export const categoryLabels: Record<string, string> = {
-  strategy: 'Strategy',
-  operations: 'Operations',
-  revenue: 'Revenue',
-  finance: 'Finance',
+  strategy:   'Strategy',
+  operations: 'Operating Model',
+  revenue:    'Business Model',
+  finance:    'Performance',
 }
 
 // ---------------------------------------------------------------------------

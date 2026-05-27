@@ -1,4 +1,12 @@
 export type CategoryId = 'strategy' | 'operations' | 'revenue' | 'finance'
+
+// ─── Framework layer types (BCT + PST) ──────────────────────────────────────
+
+export type FrameworkLayer = 'strategy' | 'business_model' | 'operating_model' | 'performance'
+export type LensId = 'external' | 'value_chain' | 'financials' | 'decision_making'
+export type LayerStrength = 'clear' | 'partial' | 'absent'
+export type AlignmentResult = 'aligned' | 'partial' | 'misaligned' | 'untestable'
+export type ConstraintLayer = FrameworkLayer | 'alignment' | 'external'
 export type SignalLevel = 'green' | 'yellow' | 'orange' | 'red'
 export type SectorId =
   | 'professional_services'
@@ -30,8 +38,10 @@ export interface AnswerOption {
 }
 
 export interface Question {
-  id: string // e.g. "S1", "O3"
-  category: CategoryId
+  id: string // e.g. "SA", "BMA", "EXA"
+  category: CategoryId  // for CategoryScore compat — BCT layer maps to existing CategoryId
+  layer?: FrameworkLayer | LensId | 'cross_layer' // framework mapping (new)
+  excludeFromScore?: boolean // PST lens questions excluded from CategoryScore (new)
   text: string
   options: AnswerOption[]
   weight: number // default 1.0
@@ -131,6 +141,12 @@ export interface DiagnosticOutput {
   centralQuestion: string
   misdiagnosisNote: string
   focusAreas: FocusArea[]
+  // Framework-mapped signal profile (populated by new engine)
+  layerSignals?: LayerSignal[]
+  lensSignals?: LensSignal[]
+  alignmentTests?: AlignmentTest[]
+  narrativeConflicts?: NarrativeConflict[]
+  constraintLocation?: ConstraintLocation
 }
 
 // --- Session / persistence ---
@@ -181,6 +197,125 @@ export interface DiagnosticState {
   questionIndex: number // index within the computed question list
   sessionId: string | null
   output: DiagnosticOutput | null
+}
+
+// --- Framework Signal Types (BCT + PST engine) ---
+
+export interface LayerSignal {
+  layer: FrameworkLayer
+  coherent: boolean
+  strength: LayerStrength
+  keySignals: string[]   // human-readable signals from specific answers
+  contradictions: string[] // conflicting signals within this layer
+}
+
+export interface LensSignal {
+  lensId: LensId
+  classification: string  // lens-specific classification value
+  signals: string[]       // human-readable signal texts
+  severity: 'high' | 'medium' | 'low' | 'none'
+}
+
+export interface AlignmentTest {
+  id: 'strategy_businessModel' | 'businessModel_operatingModel' | 'strategy_operatingModel'
+  result: AlignmentResult
+  evidence: string[]  // specific answer patterns that drive this result
+}
+
+export interface NarrativeConflict {
+  id: string
+  stated: string   // what leadership framing implies about the business
+  observed: string // what the signal pattern collectively suggests
+  significance: 'high' | 'medium'
+}
+
+export interface ConstraintLocation {
+  primaryLayer: ConstraintLayer
+  confidence: 'high' | 'medium' | 'low'
+  symptomSignals: string[]      // downstream evidence visible
+  likelyRootCauses: string[]    // upstream logic the engine infers
+  alternativeHypothesis: string | null
+}
+
+// Diagnostic pattern (replaces Archetype in the new engine)
+export interface PatternLayerCondition {
+  layer: FrameworkLayer
+  strength: LayerStrength[]  // layer must be at one of these strengths
+  coherent?: boolean         // if specified, coherence must match
+}
+
+export interface DiagnosticPattern {
+  id: string
+  name: string
+  trigger: {
+    primaryConditions: PatternLayerCondition[]
+    alignmentConditions?: { id: AlignmentTest['id']; results: AlignmentResult[] }[]
+    contextConditions?: ContextCondition[]
+    priority: number
+  }
+  headline: string
+  centralQuestion: string
+  misdiagnosisNote: string
+  focusAreas: FocusArea[]
+  defaultObservations: string[]
+}
+
+// --- AI Interpretation Layer ---
+
+export interface AISignalCluster {
+  theme: string               // e.g. "Operational capacity under growth pressure"
+  supportingSignals: string[] // 2-3 signals drawn from specific answers/flags
+  implication: string         // what this cluster means diagnostically — 1-2 sentences
+}
+
+export interface AIConfidenceScore {
+  level: 'high' | 'medium' | 'low'
+  rationale: string           // e.g. "Two categories unassessed; archetype match was borderline"
+  assessmentCoverage: number  // 0.25–1.0 (fraction of 4 categories assessed)
+}
+
+export interface AIInterpretation {
+  constraintNarrative: string        // 2-3 sentence executive synthesis of the constraint pattern
+  signalClusters: AISignalCluster[]  // 2-3 clusters of related signals
+  businessImplications: string[]     // 3-4 implications — what this pattern means for the business
+  refinedCentralQuestion: string     // archetype central question sharpened for this specific profile
+  confidence: AIConfidenceScore
+  modelVersion: string
+  generatedAt: string                // ISO timestamp
+}
+
+// Structured input sent to the Claude API
+export interface AIInterpretationInput {
+  context: {
+    sector: string | null
+    scale: string | null
+    situation: string | null
+    role: string | null
+  }
+  archetype: {
+    id: string
+    name: string
+    headline: string
+    matchClarity: 'strong' | 'moderate' | 'borderline'
+  }
+  categoryScores: {
+    categoryId: string
+    normalized: number | null
+    level: string | null
+    assessed: boolean
+  }[]
+  triggeredFlags: {
+    id: string
+    severity: string
+    observation: string
+  }[]
+  answerTranscript: {
+    questionId: string
+    categoryId: string
+    questionText: string
+    selectedAnswerText: string
+    score: number
+  }[]
 }
 
 export type DiagnosticAction =

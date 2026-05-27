@@ -1,50 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { questions, getQuestionsForFlow } from '@/diagnostic/config/questions'
-import { flagRules } from '@/diagnostic/config/flags'
-import { archetypes } from '@/diagnostic/config/archetypes'
+import { getQuestionsForFlow } from '@/diagnostic/config/questions'
 import { computeCategoryScores } from '@/diagnostic/engine/scorer'
-import { detectFlags } from '@/diagnostic/engine/flag-detector'
-import { classifyArchetype } from '@/diagnostic/engine/classifier'
-import { generateOutput } from '@/diagnostic/engine/output-generator'
-import type { CategoryId, ContextAnswers } from '@/diagnostic/types'
+import { buildSignals } from '@/diagnostic/engine/signal-builder'
+import { detectLenses } from '@/diagnostic/engine/lens-detector'
+import { matchPattern } from '@/diagnostic/engine/pattern-matcher'
+import { generateOutputFromPattern } from '@/diagnostic/engine/output-generator'
+import type { ContextAnswers } from '@/diagnostic/types'
 import { supabase, isSupabaseConfigured, type DiagnosticSessionInsert, type Json } from '@/lib/supabase'
+
+// All 4 categories are always assessed in the new architecture
+const ALL_CATEGORIES = ['strategy', 'operations', 'revenue', 'finance'] as const
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { context, focusAreas, answers, contactInfo } = body as {
+    const { context, answers, contactInfo } = body as {
       context: ContextAnswers
-      focusAreas: CategoryId[]
       answers: Record<string, string>
       contactInfo?: { name?: string; company?: string; email?: string; phone?: string }
+      // focusAreas is no longer required — kept in body type for legacy client compat
+      focusAreas?: string[]
     }
 
     console.log('[diagnostic/complete] Request received', {
-      focusAreas,
       answerCount: answers ? Object.keys(answers).length : 0,
       hasContactInfo: Boolean(contactInfo?.email),
       supabaseConfigured: isSupabaseConfigured,
     })
 
-    if (!focusAreas?.length || !answers) {
-      console.error('[diagnostic/complete] Missing required fields', { focusAreas, answers })
+    if (!answers || Object.keys(answers).length === 0) {
+      console.error('[diagnostic/complete] Missing answers')
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    // Run the diagnostic pipeline
-    const questionsForFlow = getQuestionsForFlow(focusAreas)
-    const scores = computeCategoryScores(answers, questionsForFlow, focusAreas)
-    const flags = detectFlags(answers, context, flagRules, questionsForFlow)
-    const archetype = classifyArchetype(scores, context, flags, archetypes)
-    const output = generateOutput(archetype, scores, flags, focusAreas)
+    // ── 1. Questions ─────────────────────────────────────────────────────────
+    const questionsForFlow = getQuestionsForFlow()
+
+    // ── 2. BCT Layer signals + alignment tests ───────────────────────────────
+    const { layerSignals, alignmentTests } = buildSignals(answers, questionsForFlow)
+
+    // ── 3. PST Lens signals + narrative conflicts + constraint location ───────
+    const { lensSignals, narrativeConflicts, constraintLocation } = detectLenses(
+      answers,
+      context,
+      questionsForFlow,
+      layerSignals,
+      alignmentTests,
+    )
+
+    // ── 4. Pattern matching ──────────────────────────────────────────────────
+    const { pattern } = matchPattern(layerSignals, alignmentTests, narrativeConflicts, context)
+
+    // ── 5. Category scores (for backward compat display) ─────────────────────
+    const scores = computeCategoryScores(answers, questionsForFlow, [...ALL_CATEGORIES])
+
+    // ── 6. Final output assembly ─────────────────────────────────────────────
+    const output = generateOutputFromPattern(
+      pattern,
+      scores,
+      layerSignals,
+      lensSignals,
+      alignmentTests,
+      narrativeConflicts,
+      constraintLocation,
+    )
 
     console.log('[diagnostic/complete] Pipeline complete', {
-      archetypeId: archetype.id,
-      flagCount: flags.length,
-      scoreCount: scores.length,
+      patternId: pattern.id,
+      constraintLayer: constraintLocation.primaryLayer,
+      conflictCount: narrativeConflicts.length,
     })
 
-    const flagIds = flags.map((f) => f.id)
     const completedAt = new Date().toISOString()
 
     let sessionId: string
@@ -57,27 +83,27 @@ export async function POST(req: NextRequest) {
     } else {
       const insert: DiagnosticSessionInsert = {
         completed_at: completedAt,
-        sector: context.sector ?? null,
-        scale: context.scale ?? null,
-        situation: context.situation ?? null,
-        role: context.role ?? null,
-        focus_areas: focusAreas,
-        answers: answers as unknown as Json,
-        scores: scores as unknown as Json,
-        archetype_id: archetype.id,
-        flags_triggered: flagIds,
-        output: output as unknown as Json,
-        opted_in: Boolean(contactInfo?.email),
-        contact_name: contactInfo?.name ?? null,
-        contact_email: contactInfo?.email ?? null,
+        sector:       context.sector    ?? null,
+        scale:        context.scale     ?? null,
+        situation:    context.situation ?? null,
+        role:         context.role      ?? null,
+        focus_areas:  [...ALL_CATEGORIES],
+        answers:      answers as unknown as Json,
+        scores:       scores  as unknown as Json,
+        archetype_id: pattern.id,
+        flags_triggered: [],       // flags replaced by narrative conflicts in new engine
+        output:       output  as unknown as Json,
+        opted_in:     Boolean(contactInfo?.email),
+        contact_name:    contactInfo?.name    ?? null,
+        contact_email:   contactInfo?.email   ?? null,
         contact_company: contactInfo?.company ?? null,
-        contact_phone: contactInfo?.phone ?? null,
+        contact_phone:   contactInfo?.phone   ?? null,
         brief_sent: false,
       }
 
       console.log('[diagnostic/complete] Attempting Supabase insert', {
-        table: 'diagnostic_sessions',
-        opted_in: insert.opted_in,
+        table:        'diagnostic_sessions',
+        opted_in:     insert.opted_in,
         contact_email: insert.contact_email,
         archetype_id: insert.archetype_id,
       })
@@ -93,10 +119,10 @@ export async function POST(req: NextRequest) {
           ? `${error.code}: ${error.message}${error.details ? ` | details: ${error.details}` : ''}${error.hint ? ` | hint: ${error.hint}` : ''}`
           : 'No data returned from insert'
         console.error('[diagnostic/complete] Supabase insert FAILED', {
-          code: error?.code,
+          code:    error?.code,
           message: error?.message,
           details: error?.details,
-          hint: error?.hint,
+          hint:    error?.hint,
         })
         sessionId = generateFallbackId()
       } else {

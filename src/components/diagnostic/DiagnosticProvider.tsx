@@ -35,10 +35,17 @@ function reducer(state: DiagnosticState, action: DiagnosticAction): DiagnosticSt
         context: { ...state.context, [action.field]: action.value },
       }
     case 'NEXT_STEP': {
+      // Focus step removed — all questions are universal in the new architecture.
+      // 'focus' is kept in DiagnosticStep type for backward compat with stored sessions
+      // but is never entered in new flows.
       const stepOrder: DiagnosticState['step'][] = [
-        'intro', 'context', 'focus', 'questions', 'contact', 'processing', 'done',
+        'intro', 'context', 'questions', 'contact', 'processing', 'done',
       ]
       const current = stepOrder.indexOf(state.step)
+      if (current === -1) {
+        // State from an old session that had 'focus' — skip to questions
+        return { ...state, step: 'questions', questionIndex: 0 }
+      }
       const next = stepOrder[current + 1] ?? 'done'
       return { ...state, step: next, questionIndex: 0 }
     }
@@ -109,14 +116,14 @@ export function DiagnosticProvider({ children }: { children: React.ReactNode }) 
   const totalQuestions = currentQuestions.length
   const isLastQuestion = state.questionIndex >= totalQuestions - 1
 
-  // Progress: context (10%) → focus (20%) → questions (20–80%) → contact (85%) → processing (92%)
+  // Progress: context (10%) → questions (15–80%) → contact (85%) → processing (92%)
   let progressPercent = 0
   if (state.step === 'intro') progressPercent = 0
   else if (state.step === 'context') progressPercent = 10
-  else if (state.step === 'focus') progressPercent = 20
+  else if (state.step === 'focus') progressPercent = 15  // legacy state compat
   else if (state.step === 'questions') {
     const qProgress = totalQuestions > 0 ? state.questionIndex / totalQuestions : 0
-    progressPercent = 20 + Math.round(qProgress * 60)
+    progressPercent = 15 + Math.round(qProgress * 65)
   } else if (state.step === 'contact') progressPercent = 85
   else if (state.step === 'processing') progressPercent = 92
   else if (state.step === 'done') progressPercent = 100

@@ -1,398 +1,354 @@
 import type { Question } from '../types'
 
+/**
+ * Framework-mapped question set.
+ *
+ * BCT Layer questions (11) — feed CategoryScore and LayerSignal
+ *   Strategy layer   → category: 'strategy'   (SA, SB, SC)
+ *   Business Model   → category: 'revenue'    (BMA, BMB, BMC)
+ *   Operating Model  → category: 'operations' (OMA, OMB, OMC)
+ *   Performance      → category: 'finance'    (PA, PB)
+ *
+ * PST Lens questions (7) — excludeFromScore, feed LensSignal
+ *   External         → category: 'strategy'   (EXA, EXB)
+ *   Value Chain      → category: 'operations' (VCA)
+ *   Financials       → category: 'finance'    (FINA, FINB)
+ *   Decision-Making  → category: 'operations' (DMA, DMB)
+ *
+ * Cross-layer probes (2) — excludeFromScore, feed NarrativeConflict detection
+ *   (XA, XB)
+ *
+ * All respondents answer all questions. No focus selection step.
+ */
 export const questions: Question[] = [
-  // ─── STRATEGY ───────────────────────────────────────────────────────────────
+
+  // ─── STRATEGY LAYER ─────────────────────────────────────────────────────────
 
   {
-    id: 'S1',
+    id: 'SA',
     category: 'strategy',
+    layer: 'strategy',
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'How clearly can you articulate what makes your business meaningfully different from its closest competitors — in a way your best customers would confirm?',
+    text: 'How precisely can your leadership team articulate what your business does that its closest competitors do not — in terms your best customers would confirm and that are reflected in your pricing?',
     options: [
-      { id: 'S1_A', score: 3, text: 'Very clearly — our differentiation is specific, validated, and reflected in our pricing' },
-      { id: 'S1_B', score: 2, text: 'Mostly clearly — we have a view but it is not always consistent across the leadership team' },
-      { id: 'S1_C', score: 1, text: 'Somewhat — customers do not always seem to value what we think differentiates us' },
-      { id: 'S1_D', score: 0, text: 'Not clearly — our differentiation is mainly claims we make, not differences we can prove' },
+      { id: 'SA_A', score: 3, text: 'Precisely — specific, externally confirmed, and reflected in what we charge' },
+      { id: 'SA_B', score: 2, text: 'Largely — our view is clear but not fully consistent across the leadership team' },
+      { id: 'SA_C', score: 1, text: 'Partially — customers do not consistently value what we believe differentiates us' },
+      { id: 'SA_D', score: 0, text: 'Aspirationally — we describe differentiation we believe exists but have not rigorously validated' },
     ],
   },
   {
-    id: 'S2',
+    id: 'SB',
     category: 'strategy',
+    layer: 'strategy',
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'In the last 12 months, has your competitive position — win rates, pricing power, or market share — been improving, holding, or weakening?',
+    text: 'If you compared where your business actually allocates budget, leadership attention, and organizational energy against the strategy you would describe to your board — how well do they align?',
     options: [
-      { id: 'S2_A', score: 3, text: 'Clearly improving' },
-      { id: 'S2_B', score: 2, text: 'Roughly holding — neither gaining nor losing ground' },
-      { id: 'S2_C', score: 1, text: 'Weakening in some areas but stable overall' },
-      { id: 'S2_D', score: 0, text: 'Clearly weakening across the business' },
+      { id: 'SB_A', score: 3, text: 'Very well — resource allocation clearly reflects our stated strategic priorities' },
+      { id: 'SB_B', score: 2, text: 'Mostly — real alignment with visible exceptions we are working through' },
+      { id: 'SB_C', score: 1, text: 'Partially — meaningful gaps between stated strategy and observed resource allocation' },
+      { id: 'SB_D', score: 0, text: 'Poorly — different parts of the organization are pursuing different implicit strategies' },
     ],
   },
   {
-    id: 'S3',
+    id: 'SC',
     category: 'strategy',
+    layer: 'strategy',
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'How would you characterize the growth opportunity in your core market over the next three years?',
+    text: 'Over the last 18 months, has your market position — pricing power, win rates, share in your target segments — been confirming or challenging your strategic assumptions?',
     options: [
-      { id: 'S3_A', score: 3, text: 'Significant — the market is growing and we are well-positioned to capture share' },
-      { id: 'S3_B', score: 2, text: 'Moderate — there is growth but it requires us to compete harder or expand into adjacent areas' },
-      { id: 'S3_C', score: 1, text: 'Limited — the market is mature or contracting and we need to find new growth vectors' },
-      { id: 'S3_D', score: 0, text: 'Uncertain — we do not have a clear read on where growth will come from' },
-    ],
-  },
-  {
-    id: 'S4',
-    category: 'strategy',
-    weight: 1.0,
-    dropWhenSecondary: false,
-    text: 'How aligned is your leadership team on strategic priorities — which markets to pursue, which to exit, and where to invest?',
-    options: [
-      { id: 'S4_A', score: 3, text: 'Strongly aligned — clear priorities that the team is behind' },
-      { id: 'S4_B', score: 2, text: 'Mostly aligned — some debate on priorities but generally coherent' },
-      { id: 'S4_C', score: 1, text: 'Partially aligned — meaningful disagreement that has not been resolved' },
-      { id: 'S4_D', score: 0, text: 'Not aligned — different parts of the organization are pursuing different agendas', flagIds: ['FLAG_LEADERSHIP_MISALIGNMENT'] },
-    ],
-  },
-  {
-    id: 'S5',
-    category: 'strategy',
-    weight: 1.0,
-    dropWhenSecondary: false,
-    text: 'When your strategy is not working, what is the most common explanation given internally?',
-    options: [
-      { id: 'S5_A', score: 2, text: 'Execution — the strategy is right but we are not implementing it effectively' },
-      { id: 'S5_B', score: 1, text: 'Market conditions — external factors are working against us' },
-      { id: 'S5_C', score: 1, text: 'Resources — we lack the capacity or capability to execute' },
-      { id: 'S5_D', score: 0, text: 'The strategy itself — there is genuine internal debate about whether the direction is right' },
-    ],
-  },
-  {
-    id: 'S6',
-    category: 'strategy',
-    weight: 1.0,
-    dropWhenSecondary: true,
-    text: 'How frequently does your business make meaningful strategic changes — market entry or exit, pivots, or major investment shifts?',
-    options: [
-      { id: 'S6_A', score: 1, text: 'Too frequently — we change direction before strategies have time to prove themselves', flagIds: ['FLAG_STRATEGIC_INSTABILITY'] },
-      { id: 'S6_B', score: 3, text: 'At the right cadence — we review and adjust thoughtfully based on evidence' },
-      { id: 'S6_C', score: 1, text: 'Too infrequently — we hold positions even when evidence suggests we should adapt' },
-      { id: 'S6_D', score: 0, text: 'We do not have a clear process for strategic review' },
-    ],
-  },
-  {
-    id: 'S7',
-    category: 'strategy',
-    weight: 1.0,
-    dropWhenSecondary: false,
-    text: 'How well does your current business model — how you create, deliver, and capture value — match what your best customers actually need today?',
-    options: [
-      { id: 'S7_A', score: 3, text: 'Very well — our model was built around their needs and remains relevant' },
-      { id: 'S7_B', score: 2, text: 'Reasonably well — with gaps we are aware of and working on' },
-      { id: 'S7_C', score: 1, text: 'With growing tension — our model made sense when built but the market has shifted' },
-      { id: 'S7_D', score: 0, text: 'Poorly — there is a fundamental mismatch that we are trying to address' },
+      { id: 'SC_A', score: 3, text: 'Confirming — market signals reinforce our strategic direction' },
+      { id: 'SC_B', score: 2, text: 'Mixed — some signals confirm, others raise questions we are working through' },
+      { id: 'SC_C', score: 1, text: 'Challenging — signals the business is not fully explaining within the current strategic frame' },
+      { id: 'SC_D', score: 0, text: 'Unmeasured — we do not track market position with enough precision to answer reliably' },
     ],
   },
 
-  // ─── OPERATIONS ─────────────────────────────────────────────────────────────
+  // ─── BUSINESS MODEL LAYER ────────────────────────────────────────────────────
 
   {
-    id: 'O1',
-    category: 'operations',
+    id: 'BMA',
+    category: 'revenue',
+    layer: 'business_model',
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'How confident are you that the commitments your business makes to customers — delivery timelines, quality, service levels — are consistently met?',
+    text: 'When you win competitive situations, what reason does the customer give for choosing you — and is that the same reason your leadership team would give for why you are the right choice?',
     options: [
-      { id: 'O1_A', score: 3, text: 'High confidence — we have a strong track record and process controls in place' },
-      { id: 'O1_B', score: 2, text: 'Moderate confidence — we deliver most of the time but with more variation than we would like' },
-      { id: 'O1_C', score: 1, text: 'Low confidence — inconsistent delivery is a known and active problem' },
-      { id: 'O1_D', score: 0, text: 'We do not measure this with enough precision to answer confidently', flagIds: ['FLAG_NO_DELIVERY_MEASURE'] },
+      { id: 'BMA_A', score: 3, text: 'Consistent — what customers say aligns well with what we believe about our value' },
+      { id: 'BMA_B', score: 2, text: 'Mostly aligned — with some gaps between customer articulation and our own framing' },
+      { id: 'BMA_C', score: 1, text: 'Often different — customers choose us for reasons we do not emphasize in our positioning' },
+      { id: 'BMA_D', score: 0, text: 'Unknown — we do not have structured insight into why we win or lose' },
     ],
   },
   {
-    id: 'O2',
-    category: 'operations',
+    id: 'BMB',
+    category: 'revenue',
+    layer: 'business_model',
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'Where do slowdowns or bottlenecks most frequently occur in your operations?',
+    text: 'Does your pricing logic reflect the value your business creates for its best customers — or does it reflect what the market currently accepts?',
     options: [
-      { id: 'O2_A', score: 2, text: 'At the front end — intake, scoping, quoting, or onboarding new work' },
-      { id: 'O2_B', score: 1, text: 'In core delivery — the middle of the work where most value is created' },
-      { id: 'O2_C', score: 1, text: 'At the back end — handoffs, completion, invoicing, or closing out work' },
-      { id: 'O2_D', score: 0, text: 'They move around — there is no stable, identifiable constraint' },
+      { id: 'BMB_A', score: 3, text: 'Value-reflective — pricing is anchored to outcomes and value created, not market norms' },
+      { id: 'BMB_B', score: 2, text: 'Partially value-reflective — we price for value in some situations but default to market rates in others' },
+      { id: 'BMB_C', score: 1, text: 'Market-anchored — pricing is primarily determined by what the market will accept' },
+      { id: 'BMB_D', score: 0, text: 'Reactive — pricing decisions are made deal-by-deal without a coherent underlying framework' },
     ],
   },
   {
-    id: 'O3',
-    category: 'operations',
+    id: 'BMC',
+    category: 'revenue',
+    layer: 'business_model',
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'How well does your leadership team have visibility into operational performance in real time?',
+    text: 'As revenue grows, does your cost base grow proportionally — or have you built structural leverage into how you create and deliver value?',
     options: [
-      { id: 'O3_A', score: 3, text: 'Very well — clear metrics, dashboards, and a regular review cadence' },
-      { id: 'O3_B', score: 2, text: 'Reasonably well — some visibility but gaps in key areas' },
-      { id: 'O3_C', score: 1, text: 'Poorly — we learn about operational problems after they have already had impact' },
-      { id: 'O3_D', score: 0, text: 'We rely primarily on informal signals rather than structured data', flagIds: ['FLAG_NO_OPS_VISIBILITY'] },
-    ],
-  },
-  {
-    id: 'O4',
-    category: 'operations',
-    weight: 1.0,
-    dropWhenSecondary: false,
-    text: 'How would you characterize the scalability of your current operating model?',
-    options: [
-      { id: 'O4_A', score: 3, text: 'Highly scalable — we could grow 30–50% without fundamental changes to how we operate' },
-      { id: 'O4_B', score: 2, text: 'Somewhat scalable — modest growth is manageable but structural constraints exist beyond that' },
-      { id: 'O4_C', score: 1, text: 'Constrained — we are near capacity or experiencing growing pains' },
-      { id: 'O4_D', score: 0, text: 'Proportional — our cost base grows in lockstep with revenue and we are not building leverage' },
-    ],
-  },
-  {
-    id: 'O5',
-    category: 'operations',
-    weight: 1.0,
-    dropWhenSecondary: true,
-    text: 'How effective is your organization at implementing changes to how work gets done?',
-    options: [
-      { id: 'O5_A', score: 3, text: 'Very effective — when we decide to change a process or system, we execute cleanly' },
-      { id: 'O5_B', score: 2, text: 'Mostly effective — we can implement changes but with more friction than we would like' },
-      { id: 'O5_C', score: 1, text: 'Inconsistently effective — some parts adapt well, others resist or stall' },
-      { id: 'O5_D', score: 0, text: 'Poor — most operational improvement initiatives take far longer than expected or fail' },
-    ],
-  },
-  {
-    id: 'O6',
-    category: 'operations',
-    weight: 1.0,
-    dropWhenSecondary: false,
-    text: 'Where would you locate the primary accountability gap in your organization — where outcomes are expected but ownership is unclear?',
-    options: [
-      { id: 'O6_A', score: 3, text: 'This is not a significant issue — accountability is generally clear and enforced' },
-      { id: 'O6_B', score: 2, text: 'At the middle management level — managers are not fully owning their outcomes' },
-      { id: 'O6_C', score: 1, text: 'At the leadership team level — roles and accountabilities overlap or are ambiguous' },
-      { id: 'O6_D', score: 0, text: 'At the operational or frontline level — individual accountability for output is inconsistent' },
-    ],
-  },
-  {
-    id: 'O7',
-    category: 'operations',
-    weight: 1.0,
-    dropWhenSecondary: false,
-    text: 'How would you describe your organization\'s relationship with its core operating data — costs, throughput, quality, and utilization?',
-    options: [
-      { id: 'O7_A', score: 3, text: 'Data-driven — decisions are routinely informed by accurate, timely operational data' },
-      { id: 'O7_B', score: 2, text: 'Partially data-driven — we use data in some areas but rely on judgment in others' },
-      { id: 'O7_C', score: 1, text: 'Data-aware but action-poor — we have data but do not act on it consistently' },
-      { id: 'O7_D', score: 0, text: 'Data-poor — we do not have reliable data in key operational areas' },
+      { id: 'BMC_A', score: 3, text: 'Meaningful leverage — revenue growth does not require proportional cost or headcount increases' },
+      { id: 'BMC_B', score: 2, text: 'Some leverage — with areas where the model is still resource-proportional' },
+      { id: 'BMC_C', score: 1, text: 'Largely proportional — cost base tracks revenue growth closely' },
+      { id: 'BMC_D', score: 0, text: 'Proportional by design — the model requires approximately the same resource input per unit of output' },
     ],
   },
 
-  // ─── REVENUE ─────────────────────────────────────────────────────────────────
+  // ─── OPERATING MODEL LAYER ───────────────────────────────────────────────────
 
   {
-    id: 'R1',
-    category: 'revenue',
+    id: 'OMA',
+    category: 'operations',
+    layer: 'operating_model',
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'Over the last 12 months, revenue growth has been primarily driven by:',
+    text: 'How consistently does the experience of working with your business — delivery quality, reliability, and what happens when problems arise — match what you commit to in the sales process?',
     options: [
-      { id: 'R1_A', score: 2, text: 'New customer acquisition' },
-      { id: 'R1_B', score: 3, text: 'Expansion within existing accounts — customers buying more or upgrading' },
-      { id: 'R1_C', score: 1, text: 'Price increases across the book of business' },
-      { id: 'R1_D', score: 1, text: 'Market tailwinds — rising demand or reduced competition' },
-      { id: 'R1_E', score: 0, text: 'We have not been growing, or the primary source is unclear' },
+      { id: 'OMA_A', score: 3, text: 'High consistency — strong alignment between what we sell and what we deliver' },
+      { id: 'OMA_B', score: 2, text: 'Reasonable consistency — with identifiable gaps we are aware of and actively managing' },
+      { id: 'OMA_C', score: 1, text: 'Inconsistent — quality varies in ways we cannot fully explain or predict' },
+      { id: 'OMA_D', score: 0, text: 'Visibility gap — we do not have sufficient insight into the delivery experience to answer reliably' },
     ],
   },
   {
-    id: 'R2',
-    category: 'revenue',
+    id: 'OMB',
+    category: 'operations',
+    layer: 'operating_model',
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'How would you characterize your pricing position relative to the value you deliver?',
+    text: 'Is your current organizational structure — leadership roles, accountabilities, and decision rights — configured for what your strategy requires today, or for what it required two to three years ago?',
     options: [
-      { id: 'R2_A', score: 3, text: 'We price at a premium and customers accept it — our pricing reflects our value' },
-      { id: 'R2_B', score: 2, text: 'We price in the middle of the market and compete on a mix of value and cost' },
-      { id: 'R2_C', score: 1, text: 'We are regularly pressured on price and often concede to win or retain business' },
-      { id: 'R2_D', score: 0, text: 'Pricing is largely reactive or negotiated deal-by-deal — we have no clear pricing strategy' },
+      { id: 'OMB_A', score: 3, text: 'Configured for today — structure reflects current strategic requirements' },
+      { id: 'OMB_B', score: 2, text: 'Largely for today — with inherited elements we have not fully updated' },
+      { id: 'OMB_C', score: 1, text: 'Mixed — significant parts reflect an earlier business configuration' },
+      { id: 'OMB_D', score: 0, text: 'Primarily inherited — the organizational design has not been meaningfully revisited as the strategy has evolved' },
     ],
   },
   {
-    id: 'R3',
-    category: 'revenue',
+    id: 'OMC',
+    category: 'operations',
+    layer: 'operating_model',
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'How well do you understand why customers choose you over alternatives — and why some choose not to?',
+    text: 'When operational performance diverges from what was planned, how quickly does your leadership team identify this — and through what mechanism?',
     options: [
-      { id: 'R3_A', score: 3, text: 'Very well — we have structured win/loss data and customer insight that informs our decisions' },
-      { id: 'R3_B', score: 2, text: 'Reasonably well — we have a view based on experience, though largely anecdotal' },
-      { id: 'R3_C', score: 1, text: 'Partially — we know why we win but have limited insight into why we lose' },
-      { id: 'R3_D', score: 0, text: 'Poorly — we have no systematic understanding of our win/loss drivers' },
-    ],
-  },
-  {
-    id: 'R4',
-    category: 'revenue',
-    weight: 1.0,
-    dropWhenSecondary: false,
-    text: 'How would you describe retention and expansion in your most important accounts?',
-    options: [
-      { id: 'R4_A', score: 3, text: 'Strong — we retain most key customers and consistently expand within accounts' },
-      { id: 'R4_B', score: 2, text: 'Adequate — retention is reasonable but expansion is limited or inconsistent' },
-      { id: 'R4_C', score: 1, text: 'Concerning — we see meaningful churn or shrinkage in accounts we expected to grow' },
-      { id: 'R4_D', score: 0, text: 'We do not track this with enough precision to answer confidently' },
-    ],
-  },
-  {
-    id: 'R5',
-    category: 'revenue',
-    weight: 1.0,
-    dropWhenSecondary: false,
-    text: 'How aligned are your sales and commercial activities with what your best customers actually value most?',
-    options: [
-      { id: 'R5_A', score: 3, text: 'Well aligned — our commercial approach reflects a clear understanding of customer priorities' },
-      { id: 'R5_B', score: 2, text: 'Partially aligned — we know what customers value but our commercial motion does not always reflect it' },
-      { id: 'R5_C', score: 1, text: 'Misaligned — we sell based on our capabilities and strengths, not what customers need' },
-      { id: 'R5_D', score: 0, text: 'We have not done the work to understand this distinction clearly' },
-    ],
-  },
-  {
-    id: 'R6',
-    category: 'revenue',
-    weight: 1.0,
-    dropWhenSecondary: true,
-    text: 'Where does the most friction occur in your customer acquisition process?',
-    options: [
-      { id: 'R6_A', score: 1, text: 'Generating awareness or reaching the right decision-makers' },
-      { id: 'R6_B', score: 1, text: 'Converting interest into serious conversations' },
-      { id: 'R6_C', score: 1, text: 'Closing — opportunities move slowly through our pipeline or stall at the end' },
-      { id: 'R6_D', score: 0, text: 'Onboarding — we win the work but lose momentum in the transition to delivery' },
-    ],
-  },
-  {
-    id: 'R7',
-    category: 'revenue',
-    weight: 1.0,
-    dropWhenSecondary: false,
-    text: 'If revenue growth slowed or stopped tomorrow, which cause is most likely?',
-    options: [
-      { id: 'R7_A', score: 0, text: 'Loss of a small number of key accounts — we have meaningful customer concentration risk', flagIds: ['FLAG_CONCENTRATION'] },
-      { id: 'R7_B', score: 1, text: 'A competitor offering a better or cheaper alternative' },
-      { id: 'R7_C', score: 1, text: 'Our inability to consistently deliver what we have sold' },
-      { id: 'R7_D', score: 1, text: 'Market contraction or a demand shift outside our control' },
-      { id: 'R7_E', score: 0, text: 'Our own sales capacity or go-to-market model limitations' },
+      { id: 'OMC_A', score: 3, text: 'Quickly, through structured monitoring — clear metrics and regular review surfaces divergences early' },
+      { id: 'OMC_B', score: 2, text: 'Reasonably quickly — with some visibility gaps that are worked around' },
+      { id: 'OMC_C', score: 1, text: 'Often after the fact — operational problems tend to surface after they have already had impact' },
+      { id: 'OMC_D', score: 0, text: 'Primarily through informal signals — structured performance monitoring is not in place' },
     ],
   },
 
-  // ─── FINANCE ─────────────────────────────────────────────────────────────────
+  // ─── PERFORMANCE LAYER ───────────────────────────────────────────────────────
 
   {
-    id: 'F1',
+    id: 'PA',
     category: 'finance',
+    layer: 'performance',
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'How would you describe the trend in your gross and operating margins over the last 12–24 months?',
+    text: 'Are the metrics your leadership team reviews most regularly causally connected to the strategic and operational drivers you are trying to manage — or do they primarily measure activity?',
     options: [
-      { id: 'F1_A', score: 3, text: 'Expanding — margins are improving as we scale or operate more efficiently' },
-      { id: 'F1_B', score: 2, text: 'Stable — margins are holding at acceptable levels' },
-      { id: 'F1_C', score: 1, text: 'Compressing — margins are declining and we understand why' },
-      { id: 'F1_D', score: 0, text: 'Compressing — margins are declining and the cause is not fully clear', flagIds: ['FLAG_MARGIN_COMPRESSION'] },
+      { id: 'PA_A', score: 3, text: 'Causally connected — primary metrics directly reflect strategic and operational performance drivers' },
+      { id: 'PA_B', score: 2, text: 'Mostly connected — with some legacy or activity-based metrics that do not drive decisions' },
+      { id: 'PA_C', score: 1, text: 'Partially connected — significant time is spent on metrics that do not link to strategic outcomes' },
+      { id: 'PA_D', score: 0, text: 'Primarily activity-based — the measurement system is not clearly linked to what matters strategically' },
     ],
   },
   {
-    id: 'F2',
+    id: 'PB',
     category: 'finance',
+    layer: 'performance',
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'How well do you understand the profit contribution of individual products, services, customers, or business units?',
+    text: 'When your leadership team identifies a performance gap, what is your track record of correctly diagnosing the root cause and resolving it on the first attempt?',
     options: [
-      { id: 'F2_A', score: 3, text: 'Very well — we have clear profitability data by segment and use it in decisions' },
-      { id: 'F2_B', score: 2, text: 'Reasonably well — we have a general sense but gaps in precision' },
-      { id: 'F2_C', score: 1, text: 'Partially — we track revenue by segment but not profitability' },
-      { id: 'F2_D', score: 0, text: 'Poorly — we manage to overall financials and have limited segment-level visibility', flagIds: ['FLAG_NO_PROFIT_VISIBILITY'] },
+      { id: 'PB_A', score: 3, text: 'Strong — reliable process from identifying a gap to root cause diagnosis to resolution' },
+      { id: 'PB_B', score: 2, text: 'Reasonable — correct diagnosis most of the time, with notable exceptions' },
+      { id: 'PB_C', score: 1, text: 'Inconsistent — problems frequently recur, suggesting symptoms are being addressed rather than causes' },
+      { id: 'PB_D', score: 0, text: 'Poor — performance gaps often persist because we are uncertain what is driving them' },
+    ],
+  },
+
+  // ─── EXTERNAL LENS (PST) ─────────────────────────────────────────────────────
+
+  {
+    id: 'EXA',
+    category: 'strategy',
+    layer: 'external',
+    excludeFromScore: true,
+    weight: 1.0,
+    dropWhenSecondary: false,
+    text: 'How would you characterize the underlying demand environment in your core market right now — independent of your own performance in it?',
+    options: [
+      { id: 'EXA_A', score: 3, text: 'Growing — clear demand pull, customers actively seeking solutions in our market space' },
+      { id: 'EXA_B', score: 2, text: 'Stable — the overall market is not contracting but growth requires taking share' },
+      { id: 'EXA_C', score: 1, text: 'Contracting or shifting — demand in our traditional market is declining or changing structurally' },
+      { id: 'EXA_D', score: 0, text: 'Uncertain — we do not have a clear independent read on underlying market dynamics' },
     ],
   },
   {
-    id: 'F3',
-    category: 'finance',
+    id: 'EXB',
+    category: 'strategy',
+    layer: 'external',
+    excludeFromScore: true,
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'How would you characterize cash generation relative to your reported profitability?',
+    text: 'Is the pricing pressure your business experiences primarily driven by competitors offering better or cheaper alternatives — or by your own uncertainty about the value your work creates?',
     options: [
-      { id: 'F3_A', score: 3, text: 'Consistent — cash generation tracks closely with operating profit' },
-      { id: 'F3_B', score: 2, text: 'Lagging — we are profitable but cash conversion is slower than it should be' },
-      { id: 'F3_C', score: 1, text: 'Volatile — cash generation is unpredictable and creates periodic stress', flagIds: ['FLAG_CASH_VOLATILITY'] },
-      { id: 'F3_D', score: 0, text: 'We have limited visibility into the drivers of our cash cycle' },
+      { id: 'EXB_A', score: 3, text: 'Minimal pressure — we compete primarily on quality and outcomes; price is rarely the deciding factor' },
+      { id: 'EXB_B', score: 2, text: 'External competitive pressure — alternatives exist that put a ceiling on what the market will pay' },
+      { id: 'EXB_C', score: 1, text: 'Internally driven — price pressure is partly self-inflicted; we concede before the market requires it' },
+      { id: 'EXB_D', score: 0, text: 'Mixed — both external competition and internal pricing uncertainty are material factors' },
+    ],
+  },
+
+  // ─── VALUE CHAIN LENS (PST) ──────────────────────────────────────────────────
+
+  {
+    id: 'VCA',
+    category: 'operations',
+    layer: 'value_chain',
+    excludeFromScore: true,
+    weight: 1.0,
+    dropWhenSecondary: false,
+    text: 'Where in your delivery cycle does the greatest friction, inconsistency, or loss of value occur most frequently?',
+    options: [
+      { id: 'VCA_A', score: 2, text: 'Winning work — generating the right opportunities and converting them is where friction is highest' },
+      { id: 'VCA_B', score: 1, text: 'Setting work up — scoping, pricing, and onboarding create more strain than the delivery itself' },
+      { id: 'VCA_C', score: 1, text: 'Delivering work — quality and timeline issues occur most in the core execution phase' },
+      { id: 'VCA_D', score: 1, text: 'Completing work — handoffs, sign-offs, invoicing, or close-out create friction that drags value' },
+      { id: 'VCA_E', score: 2, text: 'Sustaining relationships — delivery is adequate but retention and account expansion are where value is lost' },
+    ],
+  },
+
+  // ─── FINANCIALS LENS (PST) ───────────────────────────────────────────────────
+
+  {
+    id: 'FINA',
+    category: 'finance',
+    layer: 'financials',
+    excludeFromScore: true,
+    weight: 1.0,
+    dropWhenSecondary: false,
+    text: 'If you had to locate your primary financial challenge on a P&L, where is the pressure most concentrated?',
+    options: [
+      { id: 'FINA_A', score: 1, text: 'Revenue level — not generating enough top-line relative to strategy and market potential' },
+      { id: 'FINA_B', score: 1, text: 'Gross margin level — revenue is acceptable but the cost of delivering it compresses margin' },
+      { id: 'FINA_C', score: 1, text: 'Net margin level — gross margin is reasonable but overhead and operating costs are too high' },
+      { id: 'FINA_D', score: 0, text: 'Multiple levels simultaneously — financial pressure is visible across the P&L, not concentrated' },
+      { id: 'FINA_E', score: 3, text: 'Not a material issue — financial performance is broadly in line with expectations' },
     ],
   },
   {
-    id: 'F4',
+    id: 'FINB',
     category: 'finance',
+    layer: 'financials',
+    excludeFromScore: true,
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'How disciplined is your organization\'s investment decision-making — capex, headcount additions, and new initiatives?',
+    text: 'If revenue is underperforming expectations, is the primary driver a volume shortfall (not enough customers or transactions) or a price shortfall (not capturing enough value per engagement)?',
     options: [
-      { id: 'F4_A', score: 3, text: 'Very disciplined — investments are evaluated against clear financial criteria and reviewed regularly' },
-      { id: 'F4_B', score: 2, text: 'Moderately disciplined — we have processes but they are inconsistently applied' },
-      { id: 'F4_C', score: 1, text: 'Reactive — investment decisions are driven more by opportunity or pressure than structured evaluation' },
-      { id: 'F4_D', score: 0, text: 'We deploy capital opportunistically without a formal allocation framework' },
+      { id: 'FINB_A', score: 1, text: 'Primarily volume — not enough customers, transactions, or renewals' },
+      { id: 'FINB_B', score: 1, text: 'Primarily price — demand is there but we are not capturing sufficient value per engagement' },
+      { id: 'FINB_C', score: 0, text: 'Both — we need more customers and we need to charge more for what we do' },
+      { id: 'FINB_D', score: 0, text: 'Unclear — we do not have the data to distinguish between these drivers confidently' },
+    ],
+  },
+
+  // ─── DECISION-MAKING LENS (PST) ──────────────────────────────────────────────
+
+  {
+    id: 'DMA',
+    category: 'operations',
+    layer: 'decision_making',
+    excludeFromScore: true,
+    weight: 1.0,
+    dropWhenSecondary: false,
+    text: 'When your business needs to make a significant strategic or operational decision, how would you describe the process?',
+    options: [
+      { id: 'DMA_A', score: 3, text: 'Clear and efficient — ownership is understood, needed information is available, decisions are made at an appropriate pace' },
+      { id: 'DMA_B', score: 2, text: 'Functional but slow — the right decisions get made but the process takes longer than it should' },
+      { id: 'DMA_C', score: 1, text: 'Diffuse ownership — significant decisions involve too many people or get escalated unnecessarily' },
+      { id: 'DMA_D', score: 0, text: 'Avoidant — significant decisions are frequently deferred, discussed without resolution, or delegated without accountability' },
     ],
   },
   {
-    id: 'F5',
-    category: 'finance',
+    id: 'DMB',
+    category: 'operations',
+    layer: 'decision_making',
+    excludeFromScore: true,
     weight: 1.0,
-    dropWhenSecondary: true,
-    text: 'How would you characterize the financial risk profile of your business currently?',
+    dropWhenSecondary: false,
+    text: 'Once your leadership team makes a significant decision to change something — a direction, process, or priority — how reliably does the organization execute that change?',
     options: [
-      { id: 'F5_A', score: 3, text: 'Well-managed — appropriate reserves, manageable leverage, and meaningful financial flexibility' },
-      { id: 'F5_B', score: 2, text: 'Acceptable — some areas of risk but nothing representing a near-term threat' },
-      { id: 'F5_C', score: 1, text: 'Elevated — more exposed than we would like in one or more financial dimensions' },
-      { id: 'F5_D', score: 0, text: 'High — meaningful financial constraints are limiting our strategic options' },
+      { id: 'DMB_A', score: 3, text: 'High reliability — when we decide to change something, we execute it' },
+      { id: 'DMB_B', score: 2, text: 'Moderate — most decisions land but there are consistent areas of the organization that slow change' },
+      { id: 'DMB_C', score: 1, text: 'Inconsistent — some decisions execute cleanly while others stall, without a clear pattern' },
+      { id: 'DMB_D', score: 0, text: 'Low — the gap between decisions made and changes implemented is a known and persistent problem' },
+    ],
+  },
+
+  // ─── CROSS-LAYER PROBES ──────────────────────────────────────────────────────
+
+  {
+    id: 'XA',
+    category: 'strategy',
+    layer: 'cross_layer',
+    excludeFromScore: true,
+    weight: 1.0,
+    dropWhenSecondary: false,
+    text: 'How frequently does your leadership team encounter operational or commercial evidence that conflicts with the strategic narrative — and what typically happens when it does?',
+    options: [
+      { id: 'XA_A', score: 3, text: 'Rarely — our narrative is well-grounded; when conflicting evidence appears, we update the narrative' },
+      { id: 'XA_B', score: 2, text: 'Occasionally — with a productive process for reconciling evidence with strategy' },
+      { id: 'XA_C', score: 1, text: 'Regularly — with ongoing tension about how to interpret evidence that does not fit the current frame' },
+      { id: 'XA_D', score: 0, text: 'Frequently — the typical response is to explain conflicting evidence away rather than examine the strategy' },
     ],
   },
   {
-    id: 'F6',
-    category: 'finance',
+    id: 'XB',
+    category: 'strategy',
+    layer: 'cross_layer',
+    excludeFromScore: true,
     weight: 1.0,
     dropWhenSecondary: false,
-    text: 'If your business underperformed its financial targets last year, what was the primary cause?',
+    text: 'If you had to locate the primary constraint on your business\'s performance in a single layer — strategy, business model, operations, or performance management — which would you place it in?',
     options: [
-      { id: 'F6_A', score: 1, text: 'Revenue shortfall — we did not generate the top-line we expected' },
-      { id: 'F6_B', score: 1, text: 'Cost overruns — revenue was acceptable but costs exceeded plan' },
-      { id: 'F6_C', score: 1, text: 'Working capital — we were profitable but cash-constrained' },
-      { id: 'F6_D', score: 0, text: 'We did not have clear targets, or we did not track performance against them', flagIds: ['FLAG_NO_FINANCIAL_TARGETS'] },
-      { id: 'F6_E', score: 3, text: 'We met or exceeded our financial targets' },
-    ],
-  },
-  {
-    id: 'F7',
-    category: 'finance',
-    weight: 1.0,
-    dropWhenSecondary: false,
-    text: 'How effectively does your organization translate financial data into operational decisions?',
-    options: [
-      { id: 'F7_A', score: 3, text: 'Very effectively — financial insights drive specific operational and commercial changes' },
-      { id: 'F7_B', score: 2, text: 'Partially — finance produces good data but operational teams do not consistently act on it' },
-      { id: 'F7_C', score: 1, text: 'Poorly — there is a significant gap between finance and operations' },
-      { id: 'F7_D', score: 0, text: 'Finance is primarily a reporting function, not a decision-support function' },
+      { id: 'XB_A', score: 0, text: 'Strategy — how we have positioned the business and where we have chosen to compete' },
+      { id: 'XB_B', score: 0, text: 'Business Model — how we create, deliver, and capture value' },
+      { id: 'XB_C', score: 0, text: 'Operations — how effectively we execute the model day-to-day' },
+      { id: 'XB_D', score: 0, text: 'Performance Management — how we measure, monitor, and improve performance' },
+      { id: 'XB_E', score: 0, text: 'Uncertain — the constraint feels distributed and we have not been able to isolate it' },
     ],
   },
 ]
 
+/**
+ * Returns all questions for the diagnostic flow.
+ * In the new architecture, all questions are universal — no focus selection.
+ * The focusAreas param is kept for backward compat but ignored.
+ */
 export function getQuestionsForFlow(
-  focusAreas: import('../types').CategoryId[]
+  _focusAreas?: import('../types').CategoryId[]
 ): Question[] {
-  if (focusAreas.length === 0) return []
-
-  const [primary, secondary] = focusAreas
-
-  const primaryQs = questions.filter((q) => q.category === primary)
-
-  const secondaryQs = secondary
-    ? questions.filter((q) => q.category === secondary && !q.dropWhenSecondary)
-    : []
-
-  return [...primaryQs, ...secondaryQs]
+  return questions
 }

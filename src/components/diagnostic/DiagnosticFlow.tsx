@@ -5,7 +5,6 @@ import { ProgressBar } from './ProgressBar'
 import { IntroStep } from './steps/IntroStep'
 import { ContactStep } from './steps/ContactStep'
 import { ContextStep } from './steps/ContextStep'
-import { FocusSelectionStep } from './steps/FocusSelectionStep'
 import { QuestionStep } from './steps/QuestionStep'
 import { ProcessingStep } from './steps/ProcessingStep'
 import Link from 'next/link'
@@ -67,8 +66,7 @@ export function DiagnosticFlow() {
           {state.step === 'intro' && <IntroStep />}
           {state.step === 'contact' && <ContactStep />}
           {state.step === 'context' && <ContextStep />}
-          {state.step === 'focus' && <FocusSelectionStep />}
-          {state.step === 'questions' && <QuestionStep />}
+{state.step === 'questions' && <QuestionStep />}
           {state.step === 'processing' && <ProcessingStep />}
         </div>
       </main>
