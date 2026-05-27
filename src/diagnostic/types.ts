@@ -152,10 +152,20 @@ export interface DiagnosticSession {
   contactCompany?: string
 }
 
+// --- Contact info ---
+
+export interface ContactInfo {
+  name: string
+  company: string
+  email: string
+  phone?: string
+}
+
 // --- State machine ---
 
 export type DiagnosticStep =
   | 'intro'
+  | 'contact'
   | 'context'
   | 'focus'
   | 'questions'
@@ -164,6 +174,7 @@ export type DiagnosticStep =
 
 export interface DiagnosticState {
   step: DiagnosticStep
+  contactInfo: ContactInfo | null
   context: ContextAnswers
   focusAreas: CategoryId[]
   answers: Record<string, string> // questionId → answerId
@@ -173,6 +184,7 @@ export interface DiagnosticState {
 }
 
 export type DiagnosticAction =
+  | { type: 'SET_CONTACT_INFO'; info: ContactInfo }
   | { type: 'SET_CONTEXT'; field: keyof ContextAnswers; value: string }
   | { type: 'NEXT_STEP' }
   | { type: 'SET_FOCUS_AREAS'; areas: CategoryId[] }

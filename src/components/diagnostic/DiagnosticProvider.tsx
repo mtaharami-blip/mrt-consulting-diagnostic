@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
+import React, { createContext, useContext, useReducer, useEffect } from 'react'
 import type {
   DiagnosticState,
   DiagnosticAction,
@@ -12,6 +12,7 @@ import { getQuestionsForFlow } from '@/diagnostic/config/questions'
 
 const initialState: DiagnosticState = {
   step: 'intro',
+  contactInfo: null,
   context: {},
   focusAreas: [],
   answers: {},
@@ -22,6 +23,8 @@ const initialState: DiagnosticState = {
 
 function reducer(state: DiagnosticState, action: DiagnosticAction): DiagnosticState {
   switch (action.type) {
+    case 'SET_CONTACT_INFO':
+      return { ...state, contactInfo: action.info }
     case 'SET_CONTEXT':
       return {
         ...state,
@@ -29,7 +32,7 @@ function reducer(state: DiagnosticState, action: DiagnosticAction): DiagnosticSt
       }
     case 'NEXT_STEP': {
       const stepOrder: DiagnosticState['step'][] = [
-        'intro', 'context', 'focus', 'questions', 'processing', 'done',
+        'intro', 'contact', 'context', 'focus', 'questions', 'processing', 'done',
       ]
       const current = stepOrder.indexOf(state.step)
       const next = stepOrder[current + 1] ?? 'done'
@@ -95,14 +98,15 @@ export function DiagnosticProvider({ children }: { children: React.ReactNode }) 
   const totalQuestions = currentQuestions.length
   const isLastQuestion = state.questionIndex >= totalQuestions - 1
 
-  // Progress: context (20%) + questions (70%) + processing (10%)
+  // Progress: contact (5%) → context (15%) → focus (25%) → questions (25–85%) → processing (90%)
   let progressPercent = 0
   if (state.step === 'intro') progressPercent = 0
-  else if (state.step === 'context') progressPercent = 10
-  else if (state.step === 'focus') progressPercent = 20
+  else if (state.step === 'contact') progressPercent = 5
+  else if (state.step === 'context') progressPercent = 15
+  else if (state.step === 'focus') progressPercent = 25
   else if (state.step === 'questions') {
     const qProgress = totalQuestions > 0 ? state.questionIndex / totalQuestions : 0
-    progressPercent = 20 + Math.round(qProgress * 65)
+    progressPercent = 25 + Math.round(qProgress * 60)
   } else if (state.step === 'processing') progressPercent = 90
   else if (state.step === 'done') progressPercent = 100
 

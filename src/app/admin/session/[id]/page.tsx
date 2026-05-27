@@ -116,7 +116,7 @@ export default async function AdminSessionPage({
         <div className="flex flex-col gap-4">
 
           {/* Contact */}
-          {session.opted_in && (
+          {(session.contact_name || session.contact_email) && (
             <Section title="Contact Information">
               <Row label="Name" value={session.contact_name} />
               <Row label="Email">
@@ -130,6 +130,10 @@ export default async function AdminSessionPage({
                 ) : '—'}
               </Row>
               <Row label="Company" value={session.contact_company} />
+              <Row
+                label="Phone"
+                value={(session as unknown as { contact_phone?: string | null }).contact_phone}
+              />
             </Section>
           )}
 

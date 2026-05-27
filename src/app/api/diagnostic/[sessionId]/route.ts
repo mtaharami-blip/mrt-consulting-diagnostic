@@ -24,5 +24,6 @@ export async function GET(
   return NextResponse.json({
     output: data.output,
     completedAt: data.completed_at,
+    contactEmail: data.contact_email ?? null,
   })
 }

@@ -60,6 +60,7 @@ export function QuestionStep() {
           context: state.context,
           focusAreas: state.focusAreas,
           answers: finalAnswers,
+          contactInfo: state.contactInfo,
         }),
       })
 

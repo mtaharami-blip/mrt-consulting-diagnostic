@@ -12,10 +12,11 @@ import { supabase, isSupabaseConfigured, type DiagnosticSessionInsert, type Json
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { context, focusAreas, answers } = body as {
+    const { context, focusAreas, answers, contactInfo } = body as {
       context: ContextAnswers
       focusAreas: CategoryId[]
       answers: Record<string, string>
+      contactInfo?: { name?: string; company?: string; email?: string; phone?: string }
     }
 
     if (!focusAreas?.length || !answers) {
@@ -47,7 +48,11 @@ export async function POST(req: NextRequest) {
         archetype_id: archetype.id,
         flags_triggered: flagIds,
         output: output as unknown as Json,
-        opted_in: false,
+        opted_in: Boolean(contactInfo?.email),
+        contact_name: contactInfo?.name ?? null,
+        contact_email: contactInfo?.email ?? null,
+        contact_company: contactInfo?.company ?? null,
+        contact_phone: contactInfo?.phone ?? null,
         brief_sent: false,
       }
 

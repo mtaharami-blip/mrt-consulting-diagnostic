@@ -25,6 +25,7 @@ const HEADERS = [
   'Name',
   'Email',
   'Company',
+  'Phone',
   'Role',
   'Sector',
   'Scale',
@@ -35,7 +36,6 @@ const HEADERS = [
   'Operations Score',
   'Revenue Score',
   'Finance Score',
-  'Opted In',
 ]
 
 export async function GET() {
@@ -66,6 +66,7 @@ export async function GET() {
       s.contact_name ?? '',
       s.contact_email ?? '',
       s.contact_company ?? '',
+      (s as unknown as { contact_phone?: string | null }).contact_phone ?? '',
       label(roleLabels, s.role),
       label(sectorLabels, s.sector),
       label(scaleLabels, s.scale),
@@ -76,7 +77,6 @@ export async function GET() {
       getScore('operations'),
       getScore('revenue'),
       getScore('finance'),
-      s.opted_in ? 'Yes' : 'No',
     ]
       .map(escapeCsv)
       .join(',')

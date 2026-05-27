@@ -30,11 +30,12 @@ CREATE TABLE IF NOT EXISTS public.diagnostic_sessions (
   flags_triggered TEXT[]  NOT NULL DEFAULT '{}',
   output          JSONB,                           -- Full DiagnosticOutput snapshot
 
-  -- Lead capture (NULL until user explicitly opts in)
+  -- Lead capture (captured upfront before the diagnostic begins)
   opted_in        BOOLEAN NOT NULL DEFAULT false,
   contact_email   TEXT,
   contact_name    TEXT,
   contact_company TEXT,
+  contact_phone   TEXT,
 
   -- Consultant workflow
   brief_sent      BOOLEAN NOT NULL DEFAULT false,

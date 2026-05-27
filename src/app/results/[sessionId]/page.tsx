@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import type { DiagnosticOutput, ContextAnswers, CategoryId } from '@/diagnostic/types'
 import { CategorySignalMap } from '@/components/results/CategorySignalMap'
-import { OptInForm } from '@/components/results/OptInForm'
 import { signalConfig } from '@/diagnostic/config/categories'
 import { cn } from '@/lib/cn'
 
@@ -14,11 +13,13 @@ function ResultsContent({
   sessionId,
   context,
   focusAreas,
+  contactEmail,
 }: {
   output: DiagnosticOutput
   sessionId: string
   context: ContextAnswers
   focusAreas: CategoryId[]
+  contactEmail: string | null
 }) {
   const primaryScore = output.categoryScores
     .filter((s) => s.assessed)
@@ -232,13 +233,44 @@ function ResultsContent({
           </div>
         )}
 
-        {/* Opt-in */}
-        <OptInForm
-          sessionId={sessionId}
-          output={output}
-          context={context}
-          focusAreas={focusAreas}
-        />
+        {/* Consultant debrief confirmation */}
+        <div className="mb-12 bg-navy rounded-sm p-8 md:p-10">
+          <div className="flex items-start gap-5">
+            <div className="flex-shrink-0 mt-0.5">
+              <div className="w-8 h-8 rounded-sm bg-teal flex items-center justify-center">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2.5 7l3 3 6-6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </div>
+            <div>
+              <p
+                className="text-[11px] tracking-[0.14em] uppercase text-white/50 mb-2"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                Consultant Interpretation
+              </p>
+              <p
+                className="text-xl text-white leading-snug mb-2"
+                style={{ fontFamily: 'var(--font-playfair)' }}
+              >
+                Your diagnostic debrief is being prepared.
+              </p>
+              <p
+                className="text-[14px] text-white/70 leading-relaxed"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                A consultant interpretation of your profile will be sent
+                {contactEmail ? (
+                  <> to <span className="text-white/90">{contactEmail}</span></>
+                ) : (
+                  ' to you'
+                )}{' '}
+                within 48 hours.
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* Footer note */}
         <div className="mt-8 pt-8 border-t border-cream-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -316,6 +348,7 @@ export default function ResultsPage() {
   const [output, setOutput] = useState<DiagnosticOutput | null>(null)
   const [context, setContext] = useState<ContextAnswers>({})
   const [focusAreas, setFocusAreas] = useState<CategoryId[]>([])
+  const [contactEmail, setContactEmail] = useState<string | null>(null)
   const [status, setStatus] = useState<'loading' | 'found' | 'not-found'>('loading')
 
   useEffect(() => {
@@ -334,6 +367,7 @@ export default function ResultsPage() {
           const state = JSON.parse(stateStored)
           setContext(state.context ?? {})
           setFocusAreas(state.focusAreas ?? [])
+          setContactEmail(state.contactInfo?.email ?? null)
         }
 
         setStatus('found')
@@ -349,6 +383,7 @@ export default function ResultsPage() {
       })
       .then((data) => {
         setOutput(data.output as DiagnosticOutput)
+        setContactEmail(data.contactEmail ?? null)
         setStatus('found')
       })
       .catch(() => {
@@ -365,6 +400,7 @@ export default function ResultsPage() {
       sessionId={sessionId}
       context={context}
       focusAreas={focusAreas}
+      contactEmail={contactEmail}
     />
   )
 }

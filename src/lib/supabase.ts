@@ -44,6 +44,7 @@ export type Database = {
           contact_email: string | null
           contact_name: string | null
           contact_company: string | null
+          contact_phone: string | null
           // Consultant workflow
           brief_sent: boolean
           brief_sent_at: string | null
@@ -66,6 +67,7 @@ export type Database = {
           contact_email?: string | null
           contact_name?: string | null
           contact_company?: string | null
+          contact_phone?: string | null
           brief_sent?: boolean
           brief_sent_at?: string | null
         }
@@ -74,6 +76,7 @@ export type Database = {
           contact_email?: string | null
           contact_name?: string | null
           contact_company?: string | null
+          contact_phone?: string | null
           brief_sent?: boolean
           brief_sent_at?: string | null
         }

@@ -3,6 +3,7 @@
 import { useDiagnostic } from './DiagnosticProvider'
 import { ProgressBar } from './ProgressBar'
 import { IntroStep } from './steps/IntroStep'
+import { ContactStep } from './steps/ContactStep'
 import { ContextStep } from './steps/ContextStep'
 import { FocusSelectionStep } from './steps/FocusSelectionStep'
 import { QuestionStep } from './steps/QuestionStep'
@@ -11,7 +12,7 @@ import Link from 'next/link'
 
 export function DiagnosticFlow() {
   const { state, progressPercent, totalQuestions } = useDiagnostic()
-  const showProgress = state.step !== 'intro' && state.step !== 'done'
+  const showProgress = state.step !== 'intro' && state.step !== 'contact' && state.step !== 'done'
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
@@ -49,7 +50,7 @@ export function DiagnosticFlow() {
         )}
 
         <div className="w-24 flex justify-end">
-          {state.step !== 'intro' && state.step !== 'processing' && (
+          {state.step !== 'intro' && state.step !== 'contact' && state.step !== 'processing' && (
             <span
               className="text-[11px] tracking-[0.08em] text-text-muted uppercase"
               style={{ fontFamily: 'var(--font-inter)' }}
@@ -64,6 +65,7 @@ export function DiagnosticFlow() {
       <main className="flex-1 flex items-center justify-center px-6 md:px-12 py-12 md:py-20">
         <div className="w-full max-w-2xl">
           {state.step === 'intro' && <IntroStep />}
+          {state.step === 'contact' && <ContactStep />}
           {state.step === 'context' && <ContextStep />}
           {state.step === 'focus' && <FocusSelectionStep />}
           {state.step === 'questions' && <QuestionStep />}
