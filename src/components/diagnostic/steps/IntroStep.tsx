@@ -57,7 +57,7 @@ export function IntroStep() {
         className="inline-flex items-center gap-3 bg-teal text-white px-8 py-4 text-[13px] tracking-[0.08em] uppercase hover:bg-teal-dark transition-colors duration-200 cursor-pointer"
         style={{ fontFamily: 'var(--font-inter)' }}
       >
-        Start the Assessment
+        Begin the Assessment
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
@@ -67,7 +67,7 @@ export function IntroStep() {
         className="mt-5 text-[12px] text-text-muted"
         style={{ fontFamily: 'var(--font-inter)' }}
       >
-        Your responses are confidential. A consultant will review your results.
+        No account required. Your responses are confidential.
       </p>
     </div>
   )

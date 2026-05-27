@@ -10,7 +10,7 @@ interface ProgressBarProps {
 export function ProgressBar({ percent, step, questionIndex, totalQuestions }: ProgressBarProps) {
   const stepLabel: Record<string, string> = {
     intro: '',
-    contact: '',
+    contact: 'Almost Done',
     context: 'Business Context',
     focus: 'Focus Areas',
     questions: 'Assessment',

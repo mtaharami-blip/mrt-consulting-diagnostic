@@ -25,6 +25,8 @@ function reducer(state: DiagnosticState, action: DiagnosticAction): DiagnosticSt
   switch (action.type) {
     case 'SET_CONTACT_INFO':
       return { ...state, contactInfo: action.info }
+    case 'SET_STEP':
+      return { ...state, step: action.step }
     case 'SET_CONTEXT':
       return {
         ...state,
@@ -32,7 +34,7 @@ function reducer(state: DiagnosticState, action: DiagnosticAction): DiagnosticSt
       }
     case 'NEXT_STEP': {
       const stepOrder: DiagnosticState['step'][] = [
-        'intro', 'contact', 'context', 'focus', 'questions', 'processing', 'done',
+        'intro', 'context', 'focus', 'questions', 'contact', 'processing', 'done',
       ]
       const current = stepOrder.indexOf(state.step)
       const next = stepOrder[current + 1] ?? 'done'
@@ -98,16 +100,16 @@ export function DiagnosticProvider({ children }: { children: React.ReactNode }) 
   const totalQuestions = currentQuestions.length
   const isLastQuestion = state.questionIndex >= totalQuestions - 1
 
-  // Progress: contact (5%) → context (15%) → focus (25%) → questions (25–85%) → processing (90%)
+  // Progress: context (10%) → focus (20%) → questions (20–80%) → contact (85%) → processing (92%)
   let progressPercent = 0
   if (state.step === 'intro') progressPercent = 0
-  else if (state.step === 'contact') progressPercent = 5
-  else if (state.step === 'context') progressPercent = 15
-  else if (state.step === 'focus') progressPercent = 25
+  else if (state.step === 'context') progressPercent = 10
+  else if (state.step === 'focus') progressPercent = 20
   else if (state.step === 'questions') {
     const qProgress = totalQuestions > 0 ? state.questionIndex / totalQuestions : 0
-    progressPercent = 25 + Math.round(qProgress * 60)
-  } else if (state.step === 'processing') progressPercent = 90
+    progressPercent = 20 + Math.round(qProgress * 60)
+  } else if (state.step === 'contact') progressPercent = 85
+  else if (state.step === 'processing') progressPercent = 92
   else if (state.step === 'done') progressPercent = 100
 
   return (

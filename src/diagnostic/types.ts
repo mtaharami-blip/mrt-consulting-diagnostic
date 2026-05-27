@@ -165,10 +165,10 @@ export interface ContactInfo {
 
 export type DiagnosticStep =
   | 'intro'
-  | 'contact'
   | 'context'
   | 'focus'
   | 'questions'
+  | 'contact'
   | 'processing'
   | 'done'
 
@@ -186,6 +186,7 @@ export interface DiagnosticState {
 export type DiagnosticAction =
   | { type: 'SET_CONTACT_INFO'; info: ContactInfo }
   | { type: 'SET_CONTEXT'; field: keyof ContextAnswers; value: string }
+  | { type: 'SET_STEP'; step: DiagnosticStep }
   | { type: 'NEXT_STEP' }
   | { type: 'SET_FOCUS_AREAS'; areas: CategoryId[] }
   | { type: 'SET_ANSWER'; questionId: string; answerId: string }

@@ -12,7 +12,7 @@ import Link from 'next/link'
 
 export function DiagnosticFlow() {
   const { state, progressPercent, totalQuestions } = useDiagnostic()
-  const showProgress = state.step !== 'intro' && state.step !== 'contact' && state.step !== 'done'
+  const showProgress = state.step !== 'intro' && state.step !== 'done'
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
@@ -50,7 +50,7 @@ export function DiagnosticFlow() {
         )}
 
         <div className="w-24 flex justify-end">
-          {state.step !== 'intro' && state.step !== 'contact' && state.step !== 'processing' && (
+          {state.step !== 'intro' && state.step !== 'processing' && (
             <span
               className="text-[11px] tracking-[0.08em] text-text-muted uppercase"
               style={{ fontFamily: 'var(--font-inter)' }}

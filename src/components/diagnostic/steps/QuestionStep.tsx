@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useDiagnostic } from '../DiagnosticProvider'
 import { cn } from '@/lib/cn'
-import { useRouter } from 'next/navigation'
 import { categories } from '@/diagnostic/config/categories'
 import type { CategoryId } from '@/diagnostic/types'
 
@@ -17,10 +16,8 @@ const categoryLabel: Record<CategoryId, string> = {
 export function QuestionStep() {
   const { state, dispatch, currentQuestions, totalQuestions, isLastQuestion, progressPercent } =
     useDiagnostic()
-  const router = useRouter()
   const [animating, setAnimating] = useState(false)
   const [visible, setVisible] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
 
   const question = currentQuestions[state.questionIndex]
   const selectedAnswer = question ? state.answers[question.id] : undefined
@@ -31,15 +28,15 @@ export function QuestionStep() {
     return () => clearTimeout(t)
   }, [state.questionIndex])
 
-  async function handleSelect(answerId: string) {
-    if (!question || animating || submitting) return
+  function handleSelect(answerId: string) {
+    if (!question || animating) return
 
     dispatch({ type: 'SET_ANSWER', questionId: question.id, answerId })
 
     if (isLastQuestion) {
-      setTimeout(async () => {
-        dispatch({ type: 'SET_PROCESSING' })
-        await submitDiagnostic({ ...state.answers, [question.id]: answerId })
+      // All questions answered — go to contact gate before showing results
+      setTimeout(() => {
+        dispatch({ type: 'NEXT_STEP' })
       }, 350)
     } else {
       setAnimating(true)
@@ -47,37 +44,6 @@ export function QuestionStep() {
         dispatch({ type: 'NEXT_QUESTION' })
         setAnimating(false)
       }, 300)
-    }
-  }
-
-  async function submitDiagnostic(finalAnswers: Record<string, string>) {
-    setSubmitting(true)
-    try {
-      const res = await fetch('/api/diagnostic/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          context: state.context,
-          focusAreas: state.focusAreas,
-          answers: finalAnswers,
-          contactInfo: state.contactInfo,
-        }),
-      })
-
-      if (!res.ok) throw new Error('API error')
-
-      const data = await res.json()
-
-      // Store output in sessionStorage for instant results render
-      try {
-        sessionStorage.setItem(`diagnostic_output_${data.sessionId}`, JSON.stringify(data.output))
-      } catch {}
-
-      dispatch({ type: 'SET_DONE', sessionId: data.sessionId, output: data.output })
-      router.push(`/results/${data.sessionId}`)
-    } catch (err) {
-      console.error('Submission error:', err)
-      setSubmitting(false)
     }
   }
 
@@ -123,10 +89,10 @@ export function QuestionStep() {
             <button
               key={option.id}
               onClick={() => handleSelect(option.id)}
-              disabled={animating || submitting}
+              disabled={animating}
               className={cn(
                 'text-left px-5 py-4 border rounded-sm transition-all duration-150 group',
-                animating || submitting ? 'cursor-default' : 'cursor-pointer',
+                animating ? 'cursor-default' : 'cursor-pointer',
                 isSelected
                   ? 'bg-navy border-navy text-white'
                   : 'bg-white border-cream-border text-navy hover:border-navy-700 hover:bg-cream-dark'
