@@ -19,7 +19,15 @@ export async function POST(req: NextRequest) {
       contactInfo?: { name?: string; company?: string; email?: string; phone?: string }
     }
 
+    console.log('[diagnostic/complete] Request received', {
+      focusAreas,
+      answerCount: answers ? Object.keys(answers).length : 0,
+      hasContactInfo: Boolean(contactInfo?.email),
+      supabaseConfigured: isSupabaseConfigured,
+    })
+
     if (!focusAreas?.length || !answers) {
+      console.error('[diagnostic/complete] Missing required fields', { focusAreas, answers })
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -30,12 +38,29 @@ export async function POST(req: NextRequest) {
     const archetype = classifyArchetype(scores, context, flags, archetypes)
     const output = generateOutput(archetype, scores, flags, focusAreas)
 
+    console.log('[diagnostic/complete] Pipeline complete', {
+      archetypeId: archetype.id,
+      flagCount: flags.length,
+      scoreCount: scores.length,
+    })
+
     const flagIds = flags.map((f) => f.id)
     const completedAt = new Date().toISOString()
 
     let sessionId: string
+    let saved = false
+    let dbError: string | null = null
 
-    if (isSupabaseConfigured && supabase) {
+    if (!isSupabaseConfigured || !supabase) {
+      console.error('[diagnostic/complete] Supabase is NOT configured — check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables')
+      sessionId = generateFallbackId()
+    } else {
+      // NOTE: contact_phone is intentionally excluded from this insert.
+      // The column was added to schema.sql but may not exist in the live
+      // database if the ALTER TABLE migration has not been run yet.
+      // Run this in Supabase SQL Editor to add it:
+      //   ALTER TABLE public.diagnostic_sessions
+      //   ADD COLUMN IF NOT EXISTS contact_phone TEXT;
       const insert: DiagnosticSessionInsert = {
         completed_at: completedAt,
         sector: context.sector ?? null,
@@ -52,9 +77,15 @@ export async function POST(req: NextRequest) {
         contact_name: contactInfo?.name ?? null,
         contact_email: contactInfo?.email ?? null,
         contact_company: contactInfo?.company ?? null,
-        contact_phone: contactInfo?.phone ?? null,
         brief_sent: false,
       }
+
+      console.log('[diagnostic/complete] Attempting Supabase insert', {
+        table: 'diagnostic_sessions',
+        opted_in: insert.opted_in,
+        contact_email: insert.contact_email,
+        archetype_id: insert.archetype_id,
+      })
 
       const { data, error } = await supabase
         .from('diagnostic_sessions')
@@ -63,19 +94,31 @@ export async function POST(req: NextRequest) {
         .single()
 
       if (error || !data) {
-        console.error('Supabase insert error:', error)
-        // Fall back to a generated ID so the app still works
+        dbError = error
+          ? `${error.code}: ${error.message}${error.details ? ` | details: ${error.details}` : ''}${error.hint ? ` | hint: ${error.hint}` : ''}`
+          : 'No data returned from insert'
+        console.error('[diagnostic/complete] Supabase insert FAILED', {
+          code: error?.code,
+          message: error?.message,
+          details: error?.details,
+          hint: error?.hint,
+        })
         sessionId = generateFallbackId()
       } else {
         sessionId = data.id
+        saved = true
+        console.log('[diagnostic/complete] Supabase insert succeeded', { sessionId })
       }
-    } else {
-      sessionId = generateFallbackId()
     }
 
-    return NextResponse.json({ sessionId, output })
+    return NextResponse.json({
+      sessionId,
+      output,
+      saved,
+      ...(dbError ? { dbError } : {}),
+    })
   } catch (err) {
-    console.error('Diagnostic complete error:', err)
+    console.error('[diagnostic/complete] Unhandled exception:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

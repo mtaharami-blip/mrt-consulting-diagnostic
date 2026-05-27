@@ -14,7 +14,7 @@ export function ContactStep() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const isValid =
     name.trim().length > 0 &&
@@ -36,7 +36,7 @@ export function ContactStep() {
     dispatch({ type: 'SET_CONTACT_INFO', info: contactInfo })
     dispatch({ type: 'SET_PROCESSING' })
     setSubmitting(true)
-    setError(false)
+    setError(null)
 
     try {
       const res = await fetch('/api/diagnostic/complete', {
@@ -50,9 +50,22 @@ export function ContactStep() {
         }),
       })
 
-      if (!res.ok) throw new Error('API error')
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(`API returned ${res.status}: ${body.error ?? 'unknown error'}`)
+      }
 
       const data = await res.json()
+
+      // Log whether the session was actually saved to the database
+      if (!data.saved) {
+        console.error('[ContactStep] Session was NOT saved to Supabase.', {
+          dbError: data.dbError,
+          sessionId: data.sessionId,
+        })
+      } else {
+        console.log('[ContactStep] Session saved successfully:', data.sessionId)
+      }
 
       try {
         sessionStorage.setItem(
@@ -64,10 +77,10 @@ export function ContactStep() {
       dispatch({ type: 'SET_DONE', sessionId: data.sessionId, output: data.output })
       router.push(`/results/${data.sessionId}`)
     } catch (err) {
-      console.error('Submission error:', err)
+      console.error('[ContactStep] Submission error:', err)
       dispatch({ type: 'SET_STEP', step: 'contact' })
       setSubmitting(false)
-      setError(true)
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     }
   }
 
@@ -188,10 +201,10 @@ export function ContactStep() {
 
         {error && (
           <p
-            className="text-[12px] text-red-600"
+            className="text-[12px] text-red-600 bg-red-50 border border-red-200 px-4 py-3 rounded-sm"
             style={{ fontFamily: 'var(--font-inter)' }}
           >
-            Something went wrong. Please try again.
+            {error}
           </p>
         )}
 
