@@ -24,7 +24,7 @@ import { AI_SYSTEM_PROMPT, AI_OUTPUT_SCHEMA, AI_FIELD_RULES } from '../config/ai
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const MODEL         = 'claude-sonnet-4-5'
-const MAX_TOKENS    = 800   // 800 is ample for the structured output; reduces generation time
+const MAX_TOKENS    = 1200  // bumped from 800 — truncated responses lose the closing brace + fence
 const TEMPERATURE   = 0.3
 const TIMEOUT_MS    = 45_000  // single attempt; no retries
 
@@ -67,47 +67,49 @@ Diagnostic profile:
 ${JSON.stringify(trimmed, null, 2)}`
 }
 
-// ─── JSON extraction ─────────────────────────────────────────────────────────
+// ─── Response cleaning (pure string operation — no parsing) ──────────────────
 
 /**
- * Extracts and parses a JSON object from a Claude response that may include
- * markdown fences, preamble text, or explanation after the object.
+ * Cleans a Claude raw text response into a JSON-parseable string.
+ * This function does NOT parse — it only strips wrappers and returns a string.
+ * The single JSON.parse() call lives in interpretDiagnostic().
  *
- * Strategies tried in order:
- * 1. Direct parse — response is already clean JSON
- * 2. Fence extraction — captures content inside ```json ... ``` or ``` ... ```
- *    (handles preamble text before the fence, e.g. "Here is the output:\n```")
- * 3. Brace extraction — finds first { ... last } in the raw text
- *    (handles responses that prefix/suffix the object with prose)
+ * Strategies tried in order (most specific to most lenient):
+ *   A. Already clean — starts with { and ends with }
+ *   B. Fenced — content between ```json ... ``` (handles preamble text)
+ *   C. Brace span — first { to last } (handles unfenced prose-wrapped JSON)
+ *   D. Leading-fence strip — handles truncated responses with no closing fence
  *
- * Throws if all three strategies fail.
+ * Always returns a string. If the response is unparseable, the caller's
+ * JSON.parse will fail and log the cleaned output for inspection.
  */
-function extractJSON(text: string): unknown {
-  const trimmed = text.trim()
+export function cleanResponse(rawText: string): string {
+  const trimmed = rawText.trim()
 
-  // Strategy 1: direct parse
-  try {
-    return JSON.parse(trimmed)
-  } catch { /* fall through */ }
-
-  // Strategy 2: extract from code fence (non-greedy, handles preamble)
-  const fenceMatch = trimmed.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/)
-  if (fenceMatch?.[1]) {
-    try {
-      return JSON.parse(fenceMatch[1].trim())
-    } catch { /* fall through */ }
+  // A. Already clean JSON
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    return trimmed
   }
 
-  // Strategy 3: extract from first { to matching last }
+  // B. Fenced JSON: ```json\n{...}\n``` (with or without preamble)
+  const fenceMatch = trimmed.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/i)
+  if (fenceMatch?.[1]) {
+    return fenceMatch[1].trim()
+  }
+
+  // C. Unfenced JSON wrapped in prose — find outermost braces
   const braceStart = trimmed.indexOf('{')
   const braceEnd   = trimmed.lastIndexOf('}')
   if (braceStart !== -1 && braceEnd > braceStart) {
-    try {
-      return JSON.parse(trimmed.slice(braceStart, braceEnd + 1))
-    } catch { /* fall through */ }
+    return trimmed.slice(braceStart, braceEnd + 1)
   }
 
-  throw new Error('No JSON object found in response')
+  // D. Truncated response — strip leading fence only (parse will fail loudly)
+  let cleaned = trimmed
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*\n?/i, '')
+  }
+  return cleaned.trim()
 }
 
 // ─── Output validation ────────────────────────────────────────────────────────
@@ -242,7 +244,8 @@ export async function interpretDiagnostic(
   })
 
   const startMs = Date.now()
-  let textContent: string
+  let rawText:    string
+  let stopReason: string | null = null
 
   try {
     const response = await client.messages.create({
@@ -258,8 +261,21 @@ export async function interpretDiagnostic(
     if (!textBlock || textBlock.type !== 'text') {
       throw new AIInterpretationError('Claude response contains no text block')
     }
-    textContent = textBlock.text.trim()
-    console.log(`[AI interpreter] API call succeeded in ${elapsed} ms (${textContent.length} chars)`)
+    rawText    = textBlock.text
+    stopReason = response.stop_reason ?? null
+
+    console.log(
+      `[AI interpreter] API call succeeded in ${elapsed} ms ` +
+      `(${rawText.length} chars, stop_reason=${stopReason})`,
+    )
+
+    // Warn loudly on truncation — this is the most common cause of unparseable JSON
+    if (stopReason === 'max_tokens') {
+      console.error(
+        `[AI interpreter] WARNING: response truncated by max_tokens limit ` +
+        `(${MAX_TOKENS}). JSON will likely fail to parse — increase MAX_TOKENS.`,
+      )
+    }
   } catch (err) {
     const elapsed = Date.now() - startMs
     if (err instanceof AIInterpretationError) throw err
@@ -283,19 +299,32 @@ export async function interpretDiagnostic(
     throw new AIInterpretationError(`Claude API call failed (${errName})`, err)
   }
 
-  // Parse JSON — try three extraction strategies in order
+  // ── Cleaning step (pure string operation) ──────────────────────────────────
+  // Logs prove the cleaning path is actually executing on every response.
+  console.log('[AI interpreter] raw startsWith("```"):', rawText.startsWith('```'))
+  console.log('[AI interpreter] raw first 100 chars:', JSON.stringify(rawText.slice(0, 100)))
+
+  const cleaned = cleanResponse(rawText)
+
+  console.log('[AI interpreter] cleaned startsWith("{"):', cleaned.startsWith('{'))
+  console.log('[AI interpreter] cleaned first 100 chars:', JSON.stringify(cleaned.slice(0, 100)))
+
+  // ── The ONLY JSON.parse call in this file ──────────────────────────────────
   let parsed: unknown
   try {
-    parsed = extractJSON(textContent)
-  } catch {
-    console.error(
-      '[AI interpreter] JSON parse failed. Raw response (first 500 chars):',
-      textContent.slice(0, 500),
+    parsed = JSON.parse(cleaned)
+  } catch (err) {
+    const errMsg = (err as Error)?.message ?? String(err)
+    console.error(`[AI interpreter] JSON.parse() failed on cleaned text: ${errMsg}`)
+    console.error('[AI interpreter] Cleaned text (first 500 chars):', cleaned.slice(0, 500))
+    console.error('[AI interpreter] Raw text (first 500 chars):',     rawText.slice(0, 500))
+    throw new AIInterpretationError(
+      `Claude response is not valid JSON: ${errMsg}`,
+      { cleaned: cleaned.slice(0, 1000), raw: rawText.slice(0, 1000), stopReason },
     )
-    throw new AIInterpretationError('Claude response is not valid JSON', textContent)
   }
 
-  // Validate schema
+  // ── Schema validation ──────────────────────────────────────────────────────
   try {
     return validateOutput(parsed)
   } catch (err) {
