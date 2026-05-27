@@ -7,7 +7,7 @@ import { detectFlags } from '@/diagnostic/engine/flag-detector'
 import { classifyArchetype } from '@/diagnostic/engine/classifier'
 import { generateOutput } from '@/diagnostic/engine/output-generator'
 import type { CategoryId, ContextAnswers } from '@/diagnostic/types'
-import { supabase, isSupabaseConfigured } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured, type DiagnosticSessionInsert, type Json } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,23 +35,25 @@ export async function POST(req: NextRequest) {
     let sessionId: string
 
     if (isSupabaseConfigured && supabase) {
+      const insert: DiagnosticSessionInsert = {
+        completed_at: completedAt,
+        sector: context.sector ?? null,
+        scale: context.scale ?? null,
+        situation: context.situation ?? null,
+        role: context.role ?? null,
+        focus_areas: focusAreas,
+        answers: answers as unknown as Json,
+        scores: scores as unknown as Json,
+        archetype_id: archetype.id,
+        flags_triggered: flagIds,
+        output: output as unknown as Json,
+        opted_in: false,
+        brief_sent: false,
+      }
+
       const { data, error } = await supabase
         .from('diagnostic_sessions')
-        .insert({
-          completed_at: completedAt,
-          sector: context.sector ?? null,
-          scale: context.scale ?? null,
-          situation: context.situation ?? null,
-          role: context.role ?? null,
-          focus_areas: focusAreas,
-          answers: answers as any,
-          scores: scores as any,
-          archetype_id: archetype.id,
-          flags_triggered: flagIds,
-          output: output as any,
-          opted_in: false,
-          brief_sent: false,
-        })
+        .insert(insert)
         .select('id')
         .single()
 

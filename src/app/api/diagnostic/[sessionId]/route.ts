@@ -13,7 +13,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('diagnostic_sessions')
-    .select('output, completed_at, archetype_id')
+    .select('*')
     .eq('id', sessionId)
     .single()
 
