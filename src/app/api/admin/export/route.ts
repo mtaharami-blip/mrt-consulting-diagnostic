@@ -66,7 +66,7 @@ export async function GET() {
       s.contact_name ?? '',
       s.contact_email ?? '',
       s.contact_company ?? '',
-      (s as unknown as { contact_phone?: string | null }).contact_phone ?? '',
+      s.contact_phone ?? '',
       label(roleLabels, s.role),
       label(sectorLabels, s.sector),
       label(scaleLabels, s.scale),

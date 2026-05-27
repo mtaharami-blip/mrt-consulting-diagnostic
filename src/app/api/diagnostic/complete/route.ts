@@ -55,12 +55,6 @@ export async function POST(req: NextRequest) {
       console.error('[diagnostic/complete] Supabase is NOT configured — check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables')
       sessionId = generateFallbackId()
     } else {
-      // NOTE: contact_phone is intentionally excluded from this insert.
-      // The column was added to schema.sql but may not exist in the live
-      // database if the ALTER TABLE migration has not been run yet.
-      // Run this in Supabase SQL Editor to add it:
-      //   ALTER TABLE public.diagnostic_sessions
-      //   ADD COLUMN IF NOT EXISTS contact_phone TEXT;
       const insert: DiagnosticSessionInsert = {
         completed_at: completedAt,
         sector: context.sector ?? null,
@@ -77,6 +71,7 @@ export async function POST(req: NextRequest) {
         contact_name: contactInfo?.name ?? null,
         contact_email: contactInfo?.email ?? null,
         contact_company: contactInfo?.company ?? null,
+        contact_phone: contactInfo?.phone ?? null,
         brief_sent: false,
       }
 

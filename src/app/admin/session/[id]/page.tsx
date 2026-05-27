@@ -130,10 +130,7 @@ export default async function AdminSessionPage({
                 ) : '—'}
               </Row>
               <Row label="Company" value={session.contact_company} />
-              <Row
-                label="Phone"
-                value={(session as unknown as { contact_phone?: string | null }).contact_phone}
-              />
+              <Row label="Phone" value={session.contact_phone} />
             </Section>
           )}
 

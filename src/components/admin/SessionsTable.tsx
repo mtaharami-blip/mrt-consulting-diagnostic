@@ -215,6 +215,12 @@ export function SessionsTable({ sessions }: Props) {
                 className="px-4 py-3 text-left text-[10px] tracking-[0.12em] uppercase text-text-muted font-normal"
                 style={{ fontFamily: 'var(--font-inter)' }}
               >
+                Phone
+              </th>
+              <th
+                className="px-4 py-3 text-left text-[10px] tracking-[0.12em] uppercase text-text-muted font-normal"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
                 Role
               </th>
               <th
@@ -251,7 +257,7 @@ export function SessionsTable({ sessions }: Props) {
             {filtered.length === 0 && (
               <tr>
                 <td
-                  colSpan={10}
+                  colSpan={11}
                   className="px-4 py-12 text-center text-[13px] text-text-muted"
                   style={{ fontFamily: 'var(--font-inter)' }}
                 >
@@ -298,6 +304,13 @@ export function SessionsTable({ sessions }: Props) {
                     title={session.contact_company ?? undefined}
                   >
                     {session.contact_company ?? <span className="text-text-muted">—</span>}
+                  </td>
+                  <td
+                    className="px-4 py-3 text-[12px] text-text-secondary whitespace-nowrap"
+                    style={{ fontFamily: 'var(--font-inter)' }}
+                    title={session.contact_phone ?? undefined}
+                  >
+                    {session.contact_phone ?? <span className="text-text-muted">—</span>}
                   </td>
                   <td
                     className="px-4 py-3 text-[12px] text-text-secondary whitespace-nowrap"
