@@ -23,6 +23,8 @@ const initialState: DiagnosticState = {
 
 function reducer(state: DiagnosticState, action: DiagnosticAction): DiagnosticState {
   switch (action.type) {
+    case 'RESTORE_STATE':
+      return action.state
     case 'SET_CONTACT_INFO':
       return { ...state, contactInfo: action.info }
     case 'SET_STEP':
@@ -76,18 +78,25 @@ const DiagnosticContext = createContext<DiagnosticContextValue | null>(null)
 const STORAGE_KEY = 'arpus_diagnostic_state'
 
 export function DiagnosticProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, initialState, (init) => {
-    if (typeof window === 'undefined') return init
+  // Always start from initialState so the server render and first client render match.
+  // Restoring from sessionStorage happens in a useEffect, after hydration, to avoid
+  // the "server/client HTML mismatch" hydration error.
+  const [state, dispatch] = useReducer(reducer, initialState)
+
+  // Restore persisted state after hydration (runs once, client-only)
+  useEffect(() => {
     try {
       const saved = sessionStorage.getItem(STORAGE_KEY)
-      if (saved) return JSON.parse(saved) as DiagnosticState
+      if (saved) {
+        const parsed = JSON.parse(saved) as DiagnosticState
+        dispatch({ type: 'RESTORE_STATE', state: parsed })
+      }
     } catch {
-      // ignore
+      // ignore corrupt or missing storage
     }
-    return init
-  })
+  }, [])
 
-  // Persist to sessionStorage on every change
+  // Persist to sessionStorage on every subsequent change
   useEffect(() => {
     try {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))

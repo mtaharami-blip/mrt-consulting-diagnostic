@@ -184,6 +184,7 @@ export interface DiagnosticState {
 }
 
 export type DiagnosticAction =
+  | { type: 'RESTORE_STATE'; state: DiagnosticState }
   | { type: 'SET_CONTACT_INFO'; info: ContactInfo }
   | { type: 'SET_CONTEXT'; field: keyof ContextAnswers; value: string }
   | { type: 'SET_STEP'; step: DiagnosticStep }
