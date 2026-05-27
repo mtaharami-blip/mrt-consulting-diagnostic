@@ -12,6 +12,7 @@ import type {
   ConstraintLocation,
   LensSignal,
   FrameworkLayer,
+  AIInterpretation,
 } from '@/diagnostic/types'
 import { CategorySignalMap } from '@/components/results/CategorySignalMap'
 
@@ -357,6 +358,185 @@ function LensHighlightsPanel({ lensSignals }: { lensSignals: LensSignal[] }) {
   )
 }
 
+// ─── AI sub-components ────────────────────────────────────────────────────────
+
+function AIBadge() {
+  return (
+    <div className="inline-flex items-center gap-1.5 mb-4">
+      <div className="w-1.5 h-1.5 rounded-full bg-teal" />
+      <span
+        className="text-[10px] tracking-[0.16em] uppercase text-teal"
+        style={{ fontFamily: 'var(--font-inter)' }}
+      >
+        AI Interpretation
+      </span>
+    </div>
+  )
+}
+
+function AILoadingSection({ label }: { label: string }) {
+  return (
+    <div className="bg-white border border-cream-border rounded-sm p-6 md:p-8 mb-8">
+      <AIBadge />
+      <p
+        className="text-[10px] tracking-[0.16em] uppercase text-text-muted mb-3"
+        style={{ fontFamily: 'var(--font-inter)' }}
+      >
+        {label}
+      </p>
+      <div className="flex items-center gap-3">
+        <div className="w-4 h-4 border border-teal border-t-transparent rounded-full animate-spin flex-shrink-0" />
+        <p
+          className="text-[13px] text-text-muted italic"
+          style={{ fontFamily: 'var(--font-inter)' }}
+        >
+          Synthesising your diagnostic profile…
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function AIConstraintPatternSection({
+  interpretation,
+}: {
+  interpretation: AIInterpretation
+}) {
+  return (
+    <div className="mb-8">
+      <div className="bg-white border border-cream-border rounded-sm overflow-hidden">
+        {/* Constraint Narrative */}
+        <div className="border-l-2 border-teal p-6 md:p-8">
+          <AIBadge />
+          <p
+            className="text-[10px] tracking-[0.16em] uppercase text-text-muted mb-4"
+            style={{ fontFamily: 'var(--font-inter)' }}
+          >
+            Constraint Pattern Analysis
+          </p>
+          <p
+            className="text-[17px] md:text-[18px] text-navy leading-relaxed font-normal"
+            style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}
+          >
+            {interpretation.constraintNarrative}
+          </p>
+
+          {/* Confidence badge */}
+          <div className="mt-4 flex items-center gap-2">
+            <span
+              className={`text-[10px] tracking-[0.12em] uppercase font-medium ${
+                interpretation.confidence.level === 'high'
+                  ? 'text-signal-green'
+                  : interpretation.confidence.level === 'medium'
+                  ? 'text-signal-yellow'
+                  : 'text-text-muted'
+              }`}
+              style={{ fontFamily: 'var(--font-inter)' }}
+            >
+              {interpretation.confidence.level} confidence
+            </span>
+            <span className="text-cream-border">·</span>
+            <span
+              className="text-[11px] text-text-muted"
+              style={{ fontFamily: 'var(--font-inter)' }}
+            >
+              {interpretation.confidence.rationale}
+            </span>
+          </div>
+        </div>
+
+        {/* Signal Clusters */}
+        {interpretation.signalClusters.length > 0 && (
+          <div className="border-t border-cream-border p-6 md:p-8">
+            <p
+              className="text-[10px] tracking-[0.16em] uppercase text-text-muted mb-5"
+              style={{ fontFamily: 'var(--font-inter)' }}
+            >
+              Signal Clusters
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {interpretation.signalClusters.map((cluster, idx) => (
+                <div
+                  key={idx}
+                  className="bg-cream-dark border border-cream-border rounded-sm p-5"
+                >
+                  <div className="h-px w-5 bg-teal mb-4" />
+                  <h4
+                    className="text-[14px] text-navy leading-snug mb-3"
+                    style={{ fontFamily: 'var(--font-playfair)' }}
+                  >
+                    {cluster.theme}
+                  </h4>
+                  <ul className="mb-3 flex flex-col gap-1.5">
+                    {cluster.supportingSignals.map((sig, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-[12px] text-text-muted"
+                        style={{ fontFamily: 'var(--font-inter)' }}
+                      >
+                        <span className="text-teal mt-[3px] flex-shrink-0">–</span>
+                        {sig}
+                      </li>
+                    ))}
+                  </ul>
+                  <p
+                    className="text-[12px] text-text-secondary leading-relaxed border-t border-cream-border pt-3"
+                    style={{ fontFamily: 'var(--font-inter)' }}
+                  >
+                    {cluster.implication}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function AIBusinessImplicationsSection({
+  interpretation,
+}: {
+  interpretation: AIInterpretation
+}) {
+  return (
+    <div className="mb-8">
+      <div className="bg-cream-dark border border-cream-border rounded-sm p-6 md:p-8">
+        <AIBadge />
+        <p
+          className="text-[10px] tracking-[0.16em] uppercase text-text-muted mb-5"
+          style={{ fontFamily: 'var(--font-inter)' }}
+        >
+          Business Implications
+        </p>
+        <div className="flex flex-col gap-4">
+          {interpretation.businessImplications.map((implication, idx) => (
+            <div key={idx} className="flex items-start gap-4">
+              <div className="flex-shrink-0 mt-1">
+                <div className="w-5 h-5 rounded-full border border-cream-border bg-white flex items-center justify-center">
+                  <span
+                    className="text-[10px] text-text-muted"
+                    style={{ fontFamily: 'var(--font-inter)' }}
+                  >
+                    {idx + 1}
+                  </span>
+                </div>
+              </div>
+              <p
+                className="text-[14px] text-text-secondary leading-relaxed"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                {implication}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main results content ─────────────────────────────────────────────────────
 
 function ResultsContent({
@@ -364,12 +544,22 @@ function ResultsContent({
   sessionId,
   context,
   contactEmail,
+  aiInterpretation,
+  aiStatus,
 }: {
   output: DiagnosticOutput
   sessionId: string
   context: ContextAnswers
   contactEmail: string | null
+  aiInterpretation: AIInterpretation | null
+  aiStatus: 'idle' | 'loading' | 'complete' | 'absent'
 }) {
+  // Use AI-refined central question when available, fall back to deterministic
+  const centralQuestion =
+    aiStatus === 'complete' && aiInterpretation?.refinedCentralQuestion
+      ? aiInterpretation.refinedCentralQuestion
+      : output.centralQuestion
+
   return (
     <div className="min-h-screen bg-cream">
       {/* Header */}
@@ -499,7 +689,15 @@ function ResultsContent({
           </div>
         </div>
 
-        {/* Constraint Location — key new section */}
+        {/* AI: Constraint Pattern Analysis — sits between signal grid and evidence panels */}
+        {aiStatus === 'loading' && (
+          <AILoadingSection label="Constraint Pattern Analysis" />
+        )}
+        {aiStatus === 'complete' && aiInterpretation && (
+          <AIConstraintPatternSection interpretation={aiInterpretation} />
+        )}
+
+        {/* Constraint Location — deterministic evidence panel */}
         {output.constraintLocation && (
           <div className="mb-8">
             <ConstraintLocationPanel location={output.constraintLocation} />
@@ -516,7 +714,12 @@ function ResultsContent({
           <LensHighlightsPanel lensSignals={output.lensSignals} />
         )}
 
-        {/* Central Question */}
+        {/* AI: Business Implications — after evidence panels, before central question */}
+        {aiStatus === 'complete' && aiInterpretation && (
+          <AIBusinessImplicationsSection interpretation={aiInterpretation} />
+        )}
+
+        {/* Central Question — AI refined if available, deterministic otherwise */}
         <div className="bg-navy rounded-sm p-8 md:p-10 mb-8">
           <p
             className="text-[11px] tracking-[0.14em] uppercase text-white/50 mb-4"
@@ -528,13 +731,15 @@ function ResultsContent({
             className="text-xl md:text-2xl text-white leading-relaxed font-normal italic"
             style={{ fontFamily: 'var(--font-playfair)' }}
           >
-            "{output.centralQuestion}"
+            "{centralQuestion}"
           </p>
           <p
             className="text-[12px] text-white/40 mt-4"
             style={{ fontFamily: 'var(--font-inter)' }}
           >
-            The pattern of your responses points to this as the question most worth examining.
+            {aiStatus === 'complete' && aiInterpretation
+              ? 'Sharpened by AI interpretation for this specific diagnostic profile.'
+              : 'The pattern of your responses points to this as the question most worth examining.'}
           </p>
         </div>
 
@@ -722,6 +927,11 @@ export default function ResultsPage() {
   const [contactEmail, setContactEmail] = useState<string | null>(null)
   const [status, setStatus] = useState<'loading' | 'found' | 'not-found'>('loading')
 
+  // AI interpretation state
+  const [aiInterpretation, setAiInterpretation] = useState<AIInterpretation | null>(null)
+  const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'complete' | 'absent'>('idle')
+
+  // ── Load deterministic output ──────────────────────────────────────────────
   useEffect(() => {
     if (!sessionId) return
 
@@ -761,6 +971,38 @@ export default function ResultsPage() {
       })
   }, [sessionId])
 
+  // ── AI interpretation polling ──────────────────────────────────────────────
+  // Fires once, 3 seconds after the deterministic output loads.
+  // Local-fallback sessions (no DB record) are skipped.
+  // If not ready after one poll, the section is silently omitted — no retry.
+  useEffect(() => {
+    if (status !== 'found' || !sessionId || sessionId.startsWith('local-')) return
+
+    setAiStatus('loading')
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/diagnostic/${sessionId}/ai`)
+        if (!res.ok) { setAiStatus('absent'); return }
+        const data = await res.json() as {
+          status: string
+          interpretation: AIInterpretation | null
+        }
+        if (data.status === 'complete' && data.interpretation) {
+          setAiInterpretation(data.interpretation)
+          setAiStatus('complete')
+        } else {
+          // Still pending or failed — silently omit the section
+          setAiStatus('absent')
+        }
+      } catch {
+        setAiStatus('absent')
+      }
+    }, 3000)
+
+    return () => clearTimeout(timer)
+  }, [status, sessionId])
+
   if (status === 'loading') return <LoadingState />
   if (status === 'not-found' || !output) return <NotFoundState />
 
@@ -770,6 +1012,8 @@ export default function ResultsPage() {
       sessionId={sessionId}
       context={context}
       contactEmail={contactEmail}
+      aiInterpretation={aiInterpretation}
+      aiStatus={aiStatus}
     />
   )
 }

@@ -1,3 +1,4 @@
+import { after } from 'next/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { getQuestionsForFlow } from '@/diagnostic/config/questions'
 import { computeCategoryScores } from '@/diagnostic/engine/scorer'
@@ -5,8 +6,16 @@ import { buildSignals } from '@/diagnostic/engine/signal-builder'
 import { detectLenses } from '@/diagnostic/engine/lens-detector'
 import { matchPattern } from '@/diagnostic/engine/pattern-matcher'
 import { generateOutputFromPattern } from '@/diagnostic/engine/output-generator'
+import { buildAIInput } from '@/diagnostic/engine/ai-input-builder'
+import { interpretDiagnostic } from '@/diagnostic/engine/ai-interpreter'
 import type { ContextAnswers } from '@/diagnostic/types'
-import { supabase, isSupabaseConfigured, type DiagnosticSessionInsert, type Json } from '@/lib/supabase'
+import {
+  supabase,
+  supabaseAdmin,
+  isSupabaseConfigured,
+  type DiagnosticSessionInsert,
+  type Json,
+} from '@/lib/supabase'
 
 // All 4 categories are always assessed in the new architecture
 const ALL_CATEGORIES = ['strategy', 'operations', 'revenue', 'finance'] as const
@@ -49,7 +58,7 @@ export async function POST(req: NextRequest) {
     )
 
     // ── 4. Pattern matching ──────────────────────────────────────────────────
-    const { pattern } = matchPattern(layerSignals, alignmentTests, narrativeConflicts, context)
+    const { pattern, matchClarity } = matchPattern(layerSignals, alignmentTests, narrativeConflicts, context)
 
     // ── 5. Category scores (for backward compat display) ─────────────────────
     const scores = computeCategoryScores(answers, questionsForFlow, [...ALL_CATEGORIES])
@@ -99,6 +108,7 @@ export async function POST(req: NextRequest) {
         contact_company: contactInfo?.company ?? null,
         contact_phone:   contactInfo?.phone   ?? null,
         brief_sent: false,
+        ai_status: 'pending',
       }
 
       console.log('[diagnostic/complete] Attempting Supabase insert', {
@@ -130,6 +140,61 @@ export async function POST(req: NextRequest) {
         saved = true
         console.log('[diagnostic/complete] Supabase insert succeeded', { sessionId })
       }
+    }
+
+    // ── 8. Schedule async AI interpretation (post-response, non-blocking) ───
+    // Build the evidence package now (synchronous) so all computed values are
+    // captured in the closure before the response is flushed.
+    if (saved && process.env.ANTHROPIC_API_KEY) {
+      const questionsForAI = getQuestionsForFlow()
+      const aiInput = buildAIInput(
+        context,
+        pattern,
+        matchClarity,
+        scores,
+        layerSignals,
+        alignmentTests,
+        narrativeConflicts,
+        constraintLocation,
+        lensSignals,
+        answers,
+        questionsForAI,
+      )
+      const capturedSessionId = sessionId
+
+      after(async () => {
+        const adminClient = supabaseAdmin
+        if (!adminClient) {
+          console.error('[AI interpretation] No Supabase client available for update')
+          return
+        }
+        try {
+          console.log('[AI interpretation] Starting for session', capturedSessionId)
+          const interpretation = await interpretDiagnostic(aiInput)
+          const { error: updateError } = await adminClient
+            .from('diagnostic_sessions')
+            .update({
+              ai_interpretation: interpretation as unknown as Json,
+              ai_status:         'complete',
+              ai_generated_at:   interpretation.generatedAt,
+              ai_model_version:  interpretation.modelVersion,
+            })
+            .eq('id', capturedSessionId)
+          if (updateError) {
+            console.error('[AI interpretation] Supabase update failed', updateError)
+          } else {
+            console.log('[AI interpretation] Complete for session', capturedSessionId)
+          }
+        } catch (err) {
+          console.error('[AI interpretation] Failed for session', capturedSessionId, err)
+          // Best-effort status update — don't throw if this also fails
+          await adminClient
+            .from('diagnostic_sessions')
+            .update({ ai_status: 'failed' })
+            .eq('id', capturedSessionId)
+            .then(() => {/* fire and forget */})
+        }
+      })
     }
 
     return NextResponse.json({

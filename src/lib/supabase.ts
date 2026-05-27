@@ -48,6 +48,11 @@ export type Database = {
           // Consultant workflow
           brief_sent: boolean
           brief_sent_at: string | null
+          // AI interpretation
+          ai_interpretation: Json | null
+          ai_status: string | null
+          ai_generated_at: string | null
+          ai_model_version: string | null
         }
         Insert: {
           id?: string
@@ -70,6 +75,8 @@ export type Database = {
           contact_phone?: string | null
           brief_sent?: boolean
           brief_sent_at?: string | null
+          // AI interpretation — status set on insert; interpretation written async
+          ai_status?: string | null
         }
         Update: {
           opted_in?: boolean
@@ -79,6 +86,11 @@ export type Database = {
           contact_phone?: string | null
           brief_sent?: boolean
           brief_sent_at?: string | null
+          // AI interpretation
+          ai_interpretation?: Json | null
+          ai_status?: string | null
+          ai_generated_at?: string | null
+          ai_model_version?: string | null
         }
         Relationships: []
       }
@@ -123,3 +135,21 @@ export function requireSupabase(): TypedSupabaseClient {
   }
   return supabase
 }
+
+// ---------------------------------------------------------------------------
+// Service role client (server-side only)
+// Used for AI interpretation writes that bypass RLS.
+// Falls back to the anon client if SUPABASE_SERVICE_ROLE_KEY is not set —
+// this works when the table has no restrictive UPDATE policies.
+// ---------------------------------------------------------------------------
+
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+export const supabaseAdmin: TypedSupabaseClient | null = (() => {
+  if (!supabaseUrl || !supabaseAnonKey) return null
+  if (supabaseServiceKey) {
+    return createClient<Database>(supabaseUrl, supabaseServiceKey)
+  }
+  // Fall back to anon client — works when RLS allows server-side updates
+  return supabase
+})()

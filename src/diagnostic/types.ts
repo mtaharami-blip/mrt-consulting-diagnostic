@@ -284,7 +284,8 @@ export interface AIInterpretation {
   generatedAt: string                // ISO timestamp
 }
 
-// Structured input sent to the Claude API
+// Structured evidence package sent to the Claude API.
+// Built by ai-input-builder.ts from deterministic engine outputs.
 export interface AIInterpretationInput {
   context: {
     sector: string | null
@@ -292,7 +293,7 @@ export interface AIInterpretationInput {
     situation: string | null
     role: string | null
   }
-  archetype: {
+  pattern: {
     id: string
     name: string
     headline: string
@@ -300,14 +301,43 @@ export interface AIInterpretationInput {
   }
   categoryScores: {
     categoryId: string
+    label: string
     normalized: number | null
     level: string | null
     assessed: boolean
   }[]
-  triggeredFlags: {
+  layerSignals: {
+    layer: string
+    layerLabel: string
+    strength: string
+    coherent: boolean
+    keySignals: string[]
+    contradictions: string[]
+  }[]
+  alignmentTests: {
     id: string
+    label: string
+    result: string
+    evidence: string[]
+  }[]
+  narrativeConflicts: {
+    stated: string
+    observed: string
+    significance: string
+  }[]
+  constraintLocation: {
+    primaryLayer: string
+    primaryLayerLabel: string
+    confidence: string
+    likelyRootCauses: string[]
+    symptomSignals: string[]
+    alternativeHypothesis: string | null
+  }
+  lensHighlights: {
+    lensId: string
+    classification: string
+    signals: string[]
     severity: string
-    observation: string
   }[]
   answerTranscript: {
     questionId: string
