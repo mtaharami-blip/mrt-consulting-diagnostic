@@ -7,8 +7,12 @@
  *
  * Design principles:
  * - API key read from environment only — never hardcoded
- * - 15-second timeout; on any failure, throws AIInterpretationError
- * - Strict output validation before returning — malformed responses are rejected
+ * - Single attempt, 45 s timeout — no SDK-level retries (maxRetries: 0)
+ *   Retrying on timeout costs 3× wall time; the after() caller handles
+ *   failure gracefully by setting ai_status = 'failed'
+ * - max_tokens capped at 800 — the JSON schema fits comfortably; lower
+ *   ceiling reduces generation time under load
+ * - Strict output validation before returning — malformed responses rejected
  * - Low temperature (0.3) for analytical consistency
  * - Caller is responsible for catching errors and setting ai_status = 'failed'
  */
@@ -20,9 +24,9 @@ import { AI_SYSTEM_PROMPT, AI_OUTPUT_SCHEMA, AI_FIELD_RULES } from '../config/ai
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const MODEL         = 'claude-sonnet-4-5'
-const MAX_TOKENS    = 1200
+const MAX_TOKENS    = 800   // 800 is ample for the structured output; reduces generation time
 const TEMPERATURE   = 0.3
-const TIMEOUT_MS    = 15_000
+const TIMEOUT_MS    = 45_000  // single attempt; no retries
 
 // ─── Error type ───────────────────────────────────────────────────────────────
 
@@ -38,7 +42,21 @@ export class AIInterpretationError extends Error {
 
 // ─── Prompt builder ───────────────────────────────────────────────────────────
 
+/**
+ * Trims the evidence package before serialisation to reduce input token count.
+ * Keeps only weak answers (score ≤ 1) in the transcript — these are the
+ * diagnostically significant responses; high-scoring answers add little signal
+ * and cost ~40% of input tokens.
+ */
+function trimInput(input: AIInterpretationInput): AIInterpretationInput {
+  return {
+    ...input,
+    answerTranscript: input.answerTranscript.filter(a => a.score <= 1),
+  }
+}
+
 function buildUserPrompt(input: AIInterpretationInput): string {
+  const trimmed = trimInput(input)
   return `Interpret the following diagnostic profile and return a JSON object matching this exact schema:
 
 ${AI_OUTPUT_SCHEMA}
@@ -46,7 +64,7 @@ ${AI_OUTPUT_SCHEMA}
 ${AI_FIELD_RULES}
 
 Diagnostic profile:
-${JSON.stringify(input, null, 2)}`
+${JSON.stringify(trimmed, null, 2)}`
 }
 
 // ─── Output validation ────────────────────────────────────────────────────────
@@ -157,21 +175,32 @@ function validateOutput(raw: unknown): AIInterpretation {
 /**
  * Sends the evidence package to Claude and returns a validated interpretation.
  *
- * Throws AIInterpretationError on any failure (missing API key, timeout,
- * network error, schema validation failure). The caller in complete/route.ts
- * catches this and sets ai_status = 'failed'.
+ * Single attempt — no retries. Throws AIInterpretationError on any failure
+ * (missing API key, timeout, network error, API error, schema validation
+ * failure). The caller in complete/route.ts catches this and sets
+ * ai_status = 'failed', which is the graceful degradation path.
  */
 export async function interpretDiagnostic(
   input: AIInterpretationInput,
 ): Promise<AIInterpretation> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
+    console.error('[AI interpreter] ANTHROPIC_API_KEY is not set')
     throw new AIInterpretationError('ANTHROPIC_API_KEY is not configured')
   }
 
-  const client = new Anthropic({ apiKey, timeout: TIMEOUT_MS })
+  // maxRetries: 0 — the SDK retries by default (×3 total).
+  // With a 45 s timeout each that would be 135 s total wall time on Vercel.
+  // We handle failure in the caller; a single clean attempt is correct here.
+  const client = new Anthropic({
+    apiKey,
+    timeout:    TIMEOUT_MS,
+    maxRetries: 0,
+  })
 
+  const startMs = Date.now()
   let textContent: string
+
   try {
     const response = await client.messages.create({
       model:       MODEL,
@@ -181,27 +210,56 @@ export async function interpretDiagnostic(
       messages:    [{ role: 'user', content: buildUserPrompt(input) }],
     })
 
+    const elapsed = Date.now() - startMs
     const textBlock = response.content.find(b => b.type === 'text')
     if (!textBlock || textBlock.type !== 'text') {
       throw new AIInterpretationError('Claude response contains no text block')
     }
     textContent = textBlock.text.trim()
+    console.log(`[AI interpreter] API call succeeded in ${elapsed} ms (${textContent.length} chars)`)
   } catch (err) {
+    const elapsed = Date.now() - startMs
     if (err instanceof AIInterpretationError) throw err
-    throw new AIInterpretationError('Claude API call failed', err)
+
+    // Categorise the Anthropic SDK error for logging clarity
+    const errName  = (err as Error)?.name  ?? 'Unknown'
+    const errMsg   = (err as Error)?.message ?? String(err)
+    const isTimeout = errName === 'APIConnectionTimeoutError' ||
+      errMsg.toLowerCase().includes('timeout') ||
+      elapsed >= TIMEOUT_MS - 500
+
+    if (isTimeout) {
+      console.error(`[AI interpreter] Timeout after ${elapsed} ms (limit ${TIMEOUT_MS} ms)`)
+    } else if (errName === 'APIStatusError' || errName === 'RateLimitError') {
+      const status = (err as { status?: number }).status
+      console.error(`[AI interpreter] API error — ${errName} status=${status ?? '?'}: ${errMsg}`)
+    } else {
+      console.error(`[AI interpreter] Unexpected error — ${errName}: ${errMsg}`)
+    }
+
+    throw new AIInterpretationError(`Claude API call failed (${errName})`, err)
   }
 
+  // Parse JSON — strip accidental markdown fences if Claude adds them
   let parsed: unknown
   try {
-    // Strip accidental markdown fences if Claude includes them
     const clean = textContent
       .replace(/^```(?:json)?\s*/i, '')
       .replace(/\s*```\s*$/i, '')
       .trim()
     parsed = JSON.parse(clean)
   } catch {
+    console.error('[AI interpreter] JSON parse failed. Raw response (first 400 chars):', textContent.slice(0, 400))
     throw new AIInterpretationError('Claude response is not valid JSON', textContent)
   }
 
-  return validateOutput(parsed)
+  // Validate schema
+  try {
+    return validateOutput(parsed)
+  } catch (err) {
+    if (err instanceof AIInterpretationError) {
+      console.error('[AI interpreter] Schema validation failed:', err.message)
+    }
+    throw err
+  }
 }
