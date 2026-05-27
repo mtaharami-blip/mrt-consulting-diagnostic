@@ -56,14 +56,23 @@ export const AI_OUTPUT_SCHEMA = `{
   }
 }`
 
-export const AI_FIELD_RULES = `Field rules:
-- constraintNarrative: 2-3 sentences. Reference the specific BCT layer signal pattern and what the alignment test results and any narrative conflicts suggest about root cause versus symptom. Do not begin with "The diagnostic indicates" or similar generic openers. Do not repeat the pattern headline.
-- signalClusters: Exactly 2-3 clusters. Each cluster groups 2-3 related signals from the evidence package (layer signals, alignment tests, narrative conflicts, or specific answers) that point at the same underlying dynamic. Reference answer content and specific signal texts — not question IDs or layer names alone.
-- businessImplications: 3-4 items. Frame as "what this means for the business" not "what to do." Each implication should begin differently (vary sentence openers). Make them specific to this sector, scale, and situation — not generic statements about the pattern class.
-- refinedCentralQuestion: One question the leadership team should be asking. Start from the pattern's central question as a base, then sharpen it using the constraint location, narrative conflicts, and sector/situation context from this profile. It should feel written for this specific business.
+export const AI_FIELD_RULES = `Field rules and length budgets (these are hard limits — exceeding them causes validation failure):
+
+- constraintNarrative: 2-3 sentences. MAXIMUM 800 characters total. Reference the specific BCT layer signal pattern and what the alignment test results and any narrative conflicts suggest about root cause versus symptom. Do not begin with "The diagnostic indicates" or similar generic openers. Do not repeat the pattern headline.
+
+- signalClusters: Exactly 2-3 clusters. Each cluster has a short theme (under 80 chars), 2-3 supporting signals (each under 150 chars), and an implication (under 200 chars). Reference answer content and specific signal texts — not question IDs or layer names alone.
+
+- businessImplications: 3-4 items. Each item under 250 characters. Frame as "what this means for the business" not "what to do." Each implication should begin differently (vary sentence openers). Make them specific to this sector, scale, and situation — not generic statements about the pattern class.
+
+- refinedCentralQuestion: One question. Under 300 characters. Start from the pattern's central question as a base, then sharpen it using the constraint location, narrative conflicts, and sector/situation context from this profile.
+
 - confidence.level: high = all four layers assessed with clear strength signals + strong pattern match; medium = most layers assessed or moderate pattern match; low = limited layer data or borderline pattern match.
-- confidence.rationale: One sentence explaining the confidence level. Reference specific factors (e.g., "Two BCT layers returned partial signals and the pattern match was borderline, suggesting the constraint may not be fully visible from the assessed questions").
-- confidence.assessmentCoverage: Decimal between 0.25 and 1.0 — proportion of the four BCT layers that returned non-absent signals.`
+
+- confidence.rationale: One sentence, under 200 characters. Reference specific factors.
+
+- confidence.assessmentCoverage: Decimal between 0.25 and 1.0 — proportion of the four BCT layers that returned non-absent signals.
+
+DISCIPLINE OVER LENGTH: write tight, executive prose. If you are running over the character budget on any field, cut filler — do not extend.`
 
 /**
  * Sector label map — used to humanise sector IDs in the prompt context.

@@ -130,8 +130,9 @@ function validateOutput(raw: unknown): AIInterpretation {
   }
   const obj = raw as Record<string, unknown>
 
-  // constraintNarrative
-  const constraintNarrative = assertString(obj.constraintNarrative, 'constraintNarrative', 600)
+  // constraintNarrative — 2-3 sentences; 1000-char ceiling prevents wall-of-text
+  // without being so tight that substantive executive prose gets rejected.
+  const constraintNarrative = assertString(obj.constraintNarrative, 'constraintNarrative', 1000)
 
   // signalClusters — 2-3 items
   if (!Array.isArray(obj.signalClusters)) {
