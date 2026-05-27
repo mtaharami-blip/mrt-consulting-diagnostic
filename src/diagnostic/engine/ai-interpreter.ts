@@ -67,6 +67,49 @@ Diagnostic profile:
 ${JSON.stringify(trimmed, null, 2)}`
 }
 
+// ─── JSON extraction ─────────────────────────────────────────────────────────
+
+/**
+ * Extracts and parses a JSON object from a Claude response that may include
+ * markdown fences, preamble text, or explanation after the object.
+ *
+ * Strategies tried in order:
+ * 1. Direct parse — response is already clean JSON
+ * 2. Fence extraction — captures content inside ```json ... ``` or ``` ... ```
+ *    (handles preamble text before the fence, e.g. "Here is the output:\n```")
+ * 3. Brace extraction — finds first { ... last } in the raw text
+ *    (handles responses that prefix/suffix the object with prose)
+ *
+ * Throws if all three strategies fail.
+ */
+function extractJSON(text: string): unknown {
+  const trimmed = text.trim()
+
+  // Strategy 1: direct parse
+  try {
+    return JSON.parse(trimmed)
+  } catch { /* fall through */ }
+
+  // Strategy 2: extract from code fence (non-greedy, handles preamble)
+  const fenceMatch = trimmed.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/)
+  if (fenceMatch?.[1]) {
+    try {
+      return JSON.parse(fenceMatch[1].trim())
+    } catch { /* fall through */ }
+  }
+
+  // Strategy 3: extract from first { to matching last }
+  const braceStart = trimmed.indexOf('{')
+  const braceEnd   = trimmed.lastIndexOf('}')
+  if (braceStart !== -1 && braceEnd > braceStart) {
+    try {
+      return JSON.parse(trimmed.slice(braceStart, braceEnd + 1))
+    } catch { /* fall through */ }
+  }
+
+  throw new Error('No JSON object found in response')
+}
+
 // ─── Output validation ────────────────────────────────────────────────────────
 
 function assertString(value: unknown, field: string, maxLength?: number): string {
@@ -240,16 +283,15 @@ export async function interpretDiagnostic(
     throw new AIInterpretationError(`Claude API call failed (${errName})`, err)
   }
 
-  // Parse JSON — strip accidental markdown fences if Claude adds them
+  // Parse JSON — try three extraction strategies in order
   let parsed: unknown
   try {
-    const clean = textContent
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```\s*$/i, '')
-      .trim()
-    parsed = JSON.parse(clean)
+    parsed = extractJSON(textContent)
   } catch {
-    console.error('[AI interpreter] JSON parse failed. Raw response (first 400 chars):', textContent.slice(0, 400))
+    console.error(
+      '[AI interpreter] JSON parse failed. Raw response (first 500 chars):',
+      textContent.slice(0, 500),
+    )
     throw new AIInterpretationError('Claude response is not valid JSON', textContent)
   }
 

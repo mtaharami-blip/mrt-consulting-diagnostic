@@ -36,7 +36,7 @@ STRICT RULES:
 
 Tone reference: Harvard Business Review case study analysis, not LinkedIn thought leadership. Precise, grounded, specific.
 
-OUTPUT: Return valid JSON only. No preamble, no commentary, no markdown fences. Just the JSON object.`
+OUTPUT: Return valid JSON only. Your entire response must be a single JSON object — no preamble, no explanation, no markdown fences, no text before or after the object. Start your response with { and end it with }.`
 
 export const AI_OUTPUT_SCHEMA = `{
   "constraintNarrative": "string",
