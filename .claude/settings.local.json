@@ -4,7 +4,9 @@
       "Bash(mkdir -p /Users/mohammad/Desktop/business-diagnostic-tool/.claude)",
       "mcp__Claude_Preview__preview_start",
       "Bash(rm index.html)",
-      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git --yes)"
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git --yes)",
+      "Bash(npm install *)",
+      "Bash(mkdir -p src/diagnostic/config src/diagnostic/engine src/components/landing src/components/diagnostic/steps src/components/results src/lib emails src/app/diagnostic \"src/app/results/[sessionId]\" src/app/api/diagnostic/complete src/app/api/diagnostic/optin \"src/app/api/diagnostic/[sessionId]\")"
     ]
   }
 }

@@ -1,0 +1,129 @@
+'use client'
+
+import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
+import type {
+  DiagnosticState,
+  DiagnosticAction,
+  DiagnosticOutput,
+  CategoryId,
+  ContextAnswers,
+} from '@/diagnostic/types'
+import { getQuestionsForFlow } from '@/diagnostic/config/questions'
+
+const initialState: DiagnosticState = {
+  step: 'intro',
+  context: {},
+  focusAreas: [],
+  answers: {},
+  questionIndex: 0,
+  sessionId: null,
+  output: null,
+}
+
+function reducer(state: DiagnosticState, action: DiagnosticAction): DiagnosticState {
+  switch (action.type) {
+    case 'SET_CONTEXT':
+      return {
+        ...state,
+        context: { ...state.context, [action.field]: action.value },
+      }
+    case 'NEXT_STEP': {
+      const stepOrder: DiagnosticState['step'][] = [
+        'intro', 'context', 'focus', 'questions', 'processing', 'done',
+      ]
+      const current = stepOrder.indexOf(state.step)
+      const next = stepOrder[current + 1] ?? 'done'
+      return { ...state, step: next, questionIndex: 0 }
+    }
+    case 'SET_FOCUS_AREAS':
+      return { ...state, focusAreas: action.areas }
+    case 'SET_ANSWER':
+      return {
+        ...state,
+        answers: { ...state.answers, [action.questionId]: action.answerId },
+      }
+    case 'NEXT_QUESTION':
+      return { ...state, questionIndex: state.questionIndex + 1 }
+    case 'PREV_QUESTION':
+      return { ...state, questionIndex: Math.max(0, state.questionIndex - 1) }
+    case 'SET_PROCESSING':
+      return { ...state, step: 'processing' }
+    case 'SET_DONE':
+      return { ...state, step: 'done', sessionId: action.sessionId, output: action.output }
+    case 'RESET':
+      return initialState
+    default:
+      return state
+  }
+}
+
+interface DiagnosticContextValue {
+  state: DiagnosticState
+  dispatch: React.Dispatch<DiagnosticAction>
+  currentQuestions: ReturnType<typeof getQuestionsForFlow>
+  totalQuestions: number
+  isLastQuestion: boolean
+  progressPercent: number
+}
+
+const DiagnosticContext = createContext<DiagnosticContextValue | null>(null)
+
+const STORAGE_KEY = 'arpus_diagnostic_state'
+
+export function DiagnosticProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(reducer, initialState, (init) => {
+    if (typeof window === 'undefined') return init
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY)
+      if (saved) return JSON.parse(saved) as DiagnosticState
+    } catch {
+      // ignore
+    }
+    return init
+  })
+
+  // Persist to sessionStorage on every change
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    } catch {
+      // ignore
+    }
+  }, [state])
+
+  const currentQuestions = getQuestionsForFlow(state.focusAreas)
+  const totalQuestions = currentQuestions.length
+  const isLastQuestion = state.questionIndex >= totalQuestions - 1
+
+  // Progress: context (20%) + questions (70%) + processing (10%)
+  let progressPercent = 0
+  if (state.step === 'intro') progressPercent = 0
+  else if (state.step === 'context') progressPercent = 10
+  else if (state.step === 'focus') progressPercent = 20
+  else if (state.step === 'questions') {
+    const qProgress = totalQuestions > 0 ? state.questionIndex / totalQuestions : 0
+    progressPercent = 20 + Math.round(qProgress * 65)
+  } else if (state.step === 'processing') progressPercent = 90
+  else if (state.step === 'done') progressPercent = 100
+
+  return (
+    <DiagnosticContext.Provider
+      value={{
+        state,
+        dispatch,
+        currentQuestions,
+        totalQuestions,
+        isLastQuestion,
+        progressPercent,
+      }}
+    >
+      {children}
+    </DiagnosticContext.Provider>
+  )
+}
+
+export function useDiagnostic() {
+  const ctx = useContext(DiagnosticContext)
+  if (!ctx) throw new Error('useDiagnostic must be used within DiagnosticProvider')
+  return ctx
+}
